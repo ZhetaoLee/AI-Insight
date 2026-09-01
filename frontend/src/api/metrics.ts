@@ -25,7 +25,13 @@ export async function fetchDashboardMetrics(
   groupBy: GroupByField,
   q3Q5Criteria: Q3Q5Criteria
 ): Promise<DashboardMetricsResponse> {
-  const params = new URLSearchParams({ scope: scope.type });
+  const params = new URLSearchParams({
+    scope: scope.type,
+    group_by: groupBy,
+    q3: q3Q5Criteria.weekly_time_saved,
+    q4: q3Q5Criteria.work_output_change,
+    q5: q3Q5Criteria.quality_change,
+  });
   if (scope.type !== "org") params.set("scope_id", scope.id);
 
   try {

@@ -1,5 +1,8 @@
 .DS_Store
 *.md
+!README.md
+!docs/
+!docs/**/*.md
 node_modules/
 dist/
 *.local
