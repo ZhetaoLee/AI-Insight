@@ -1,10 +1,8 @@
 # Dashboard Metrics Logic
 
-This file is a pushable implementation reference for the local canonical `metrics.md`. Keep backend calculations, frontend rendering, and tests aligned to these rules.
-
 ## Scope Resolution
 
-Every metrics request resolves exactly one employee scope before reading responses:
+Metrics are defined for one employee scope at a time:
 
 - `org`: all seeded employees.
 - `manager`: selected manager plus all descendants.
@@ -164,20 +162,3 @@ barrier_percentage = barrier_count / respondents_who_answered_Q8
 ```
 
 Chart rule: horizontal bars sorted by count descending. `no_major_barriers` is mutually exclusive with all other barrier choices. Show `Other` as one row; show submitted `other_text` values on hover.
-
-## API Query Contract
-
-Dashboard metrics are requested with:
-
-```text
-GET /api/metrics?scope=org&group_by=department&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
-GET /api/metrics?scope=manager&scope_id=emp_201&group_by=level&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
-GET /api/metrics?scope=level&scope_id=ic&group_by=department&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
-```
-
-Query parameters:
-
-- `scope`: required, `org`, `manager`, or `level`.
-- `scope_id`: required for `manager` and `level`.
-- `group_by`: optional, `department` or `level`.
-- `q3`, `q4`, `q5`: dynamic analysis criteria.

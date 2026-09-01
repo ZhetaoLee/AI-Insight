@@ -1,7 +1,5 @@
 # Survey Questions Reference
 
-This file is a pushable implementation reference for the local canonical `Questions.md`. Keep the frontend, backend schemas, seed data, and tests aligned to these options and answer codes.
-
 ## Employee Context
 
 Level is read-only context loaded from the selected employee record. It is not submitted as a survey answer.
@@ -111,28 +109,3 @@ Multiple choice.
 - `other`: Other
 
 If `other` is selected, `other_text` is required. `no_major_barriers` is mutually exclusive with every other barrier option.
-
-## Submission Shape
-
-```json
-{
-  "employee_id": "emp_104",
-  "answers": {
-    "ai_usage_frequency": "daily",
-    "top_value_areas": [
-      { "area": "implementation", "rank": 1, "other_text": null },
-      { "area": "testing", "rank": 2, "other_text": null },
-      { "area": "other", "rank": 3, "other_text": "Prompt library maintenance" }
-    ],
-    "weekly_time_saved": "1_5_hours",
-    "work_output_change": "slightly_more",
-    "quality_change": "slightly_better",
-    "correction_frequency": "sometimes",
-    "biggest_benefit": { "option": "saves_time", "other_text": null },
-    "barriers": [
-      { "option": "lack_of_training", "other_text": null },
-      { "option": "other", "other_text": "Limited approved tools" }
-    ]
-  }
-}
-```

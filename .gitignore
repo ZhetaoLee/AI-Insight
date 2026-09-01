@@ -7,5 +7,10 @@ node_modules/
 dist/
 *.local
 *.tsbuildinfo
+__pycache__/
+.pytest_cache/
+.venv/
+*.egg-info/
+*.py[cod]
 frontend/vite.config.js
 frontend/vite.config.d.ts
