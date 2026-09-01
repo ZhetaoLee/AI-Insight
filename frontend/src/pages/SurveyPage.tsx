@@ -2,35 +2,61 @@ import { useEffect, useState } from "react";
 import { fetchEmployees } from "../api/employees";
 import { submitSurveyResponse } from "../api/survey";
 import { EmployeePicker } from "../components/survey/EmployeePicker";
+import { MultiSelectQuestion } from "../components/survey/MultiSelectQuestion";
+import { OtherTextInput } from "../components/survey/OtherTextInput";
 import { RankQuestion } from "../components/survey/RankQuestion";
 import { SingleSelectQuestion } from "../components/survey/SingleSelectQuestion";
 import type { Employee } from "../types/employee";
 import {
   AI_USAGE_FREQUENCY,
-  BIGGEST_BARRIER,
+  BARRIERS,
   BIGGEST_BENEFIT,
   CORRECTION_FREQUENCY,
-  EMPTY_ANSWERS,
-  MOST_IMPACTED_WORKFLOW,
   QUALITY_CHANGE,
   TOP_VALUE_AREAS,
   WEEKLY_TIME_SAVED,
-  WEEKLY_WORK_ITEMS,
   WORK_OUTPUT_CHANGE,
-  type SurveyAnswers,
 } from "../types/survey";
 import "./SurveyPage.css";
 
 const TOP_VALUE_AREA_RANK_COUNT = 3;
+const OTHER_CODE = "other";
 
-type FieldErrors = Partial<Record<"employee" | keyof SurveyAnswers, boolean>>;
+type FieldErrors = Partial<
+  Record<
+    | "employee"
+    | "ai_usage_frequency"
+    | "top_value_areas"
+    | "top_value_area_other"
+    | "weekly_time_saved"
+    | "work_output_change"
+    | "quality_change"
+    | "correction_frequency"
+    | "biggest_benefit"
+    | "biggest_benefit_other"
+    | "barriers"
+    | "barriers_other",
+    boolean
+  >
+>;
 
 export function SurveyPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<SurveyAnswers>(EMPTY_ANSWERS);
+
+  const [aiUsageFrequency, setAiUsageFrequency] = useState<string | null>(null);
   const [topValueAreaCodes, setTopValueAreaCodes] = useState<string[]>([]);
+  const [topValueAreaOtherText, setTopValueAreaOtherText] = useState("");
+  const [weeklyTimeSaved, setWeeklyTimeSaved] = useState<string | null>(null);
+  const [workOutputChange, setWorkOutputChange] = useState<string | null>(null);
+  const [qualityChange, setQualityChange] = useState<string | null>(null);
+  const [correctionFrequency, setCorrectionFrequency] = useState<string | null>(null);
+  const [biggestBenefit, setBiggestBenefit] = useState<string | null>(null);
+  const [biggestBenefitOtherText, setBiggestBenefitOtherText] = useState("");
+  const [barrierCodes, setBarrierCodes] = useState<string[]>([]);
+  const [barriersOtherText, setBarriersOtherText] = useState("");
+
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -41,53 +67,85 @@ export function SurveyPage() {
       .finally(() => setLoadingEmployees(false));
   }, []);
 
-  function setAnswer<K extends keyof SurveyAnswers>(key: K, value: SurveyAnswers[K]) {
-    setAnswers((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => ({ ...prev, [key]: false }));
-  }
-
   function toggleTopValueArea(code: string) {
     setTopValueAreaCodes((prev) => {
       if (prev.includes(code)) return prev.filter((c) => c !== code);
       if (prev.length >= TOP_VALUE_AREA_RANK_COUNT) return prev;
       return [...prev, code];
     });
-    setErrors((prev) => ({ ...prev, top_value_areas: false }));
+    setErrors((prev) => ({ ...prev, top_value_areas: false, top_value_area_other: false }));
+  }
+
+  function toggleBarrier(code: string) {
+    setBarrierCodes((prev) => (prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]));
+    setErrors((prev) => ({ ...prev, barriers: false, barriers_other: false }));
   }
 
   function resetForm() {
     setEmployeeId(null);
-    setAnswers(EMPTY_ANSWERS);
+    setAiUsageFrequency(null);
     setTopValueAreaCodes([]);
+    setTopValueAreaOtherText("");
+    setWeeklyTimeSaved(null);
+    setWorkOutputChange(null);
+    setQualityChange(null);
+    setCorrectionFrequency(null);
+    setBiggestBenefit(null);
+    setBiggestBenefitOtherText("");
+    setBarrierCodes([]);
+    setBarriersOtherText("");
     setErrors({});
     setSubmitted(false);
   }
 
+  const includesOtherArea = topValueAreaCodes.includes(OTHER_CODE);
+  const showBiggestBenefitOther = biggestBenefit === OTHER_CODE;
+  const includesOtherBarrier = barrierCodes.includes(OTHER_CODE);
+
   async function handleSubmit() {
     const nextErrors: FieldErrors = {
       employee: !employeeId,
-      ai_usage_frequency: !answers.ai_usage_frequency,
+      ai_usage_frequency: !aiUsageFrequency,
       top_value_areas: topValueAreaCodes.length !== TOP_VALUE_AREA_RANK_COUNT,
-      weekly_time_saved: !answers.weekly_time_saved,
-      work_output_change: !answers.work_output_change,
-      quality_change: !answers.quality_change,
-      correction_frequency: !answers.correction_frequency,
-      biggest_benefit: !answers.biggest_benefit,
-      biggest_barrier: !answers.biggest_barrier,
-      weekly_work_items: !answers.weekly_work_items,
-      most_impacted_workflow: !answers.most_impacted_workflow,
+      top_value_area_other: includesOtherArea && !topValueAreaOtherText.trim(),
+      weekly_time_saved: !weeklyTimeSaved,
+      work_output_change: !workOutputChange,
+      quality_change: !qualityChange,
+      correction_frequency: !correctionFrequency,
+      biggest_benefit: !biggestBenefit,
+      biggest_benefit_other: showBiggestBenefitOther && !biggestBenefitOtherText.trim(),
+      barriers: barrierCodes.length === 0,
+      barriers_other: includesOtherBarrier && !barriersOtherText.trim(),
     };
     const hasErrors = Object.values(nextErrors).some(Boolean);
     setErrors(nextErrors);
-    if (hasErrors || !employeeId) return;
+    if (hasErrors || !employeeId || !aiUsageFrequency || !weeklyTimeSaved || !workOutputChange || !qualityChange || !correctionFrequency || !biggestBenefit) {
+      return;
+    }
 
     setSubmitting(true);
     try {
       await submitSurveyResponse({
         employee_id: employeeId,
         answers: {
-          ...answers,
-          top_value_areas: topValueAreaCodes.map((area, i) => ({ area, rank: i + 1 })),
+          ai_usage_frequency: aiUsageFrequency,
+          top_value_areas: topValueAreaCodes.map((area, i) => ({
+            area,
+            rank: i + 1,
+            other_text: area === OTHER_CODE ? topValueAreaOtherText.trim() : null,
+          })),
+          weekly_time_saved: weeklyTimeSaved,
+          work_output_change: workOutputChange,
+          quality_change: qualityChange,
+          correction_frequency: correctionFrequency,
+          biggest_benefit: {
+            option: biggestBenefit,
+            other_text: showBiggestBenefitOther ? biggestBenefitOtherText.trim() : null,
+          },
+          barriers: barrierCodes.map((option) => ({
+            option,
+            other_text: option === OTHER_CODE ? barriersOtherText.trim() : null,
+          })),
         },
       });
       setSubmitted(true);
@@ -98,7 +156,7 @@ export function SurveyPage() {
   }
 
   const hasErrors = Object.values(errors).some(Boolean);
-  const rankedAreas = topValueAreaCodes.map((area, i) => ({ area, rank: i + 1 }));
+  const rankedAreas = topValueAreaCodes.map((area, i) => ({ area, rank: i + 1, other_text: null }));
 
   return (
     <div className="survey-shell">
@@ -106,7 +164,7 @@ export function SurveyPage() {
         <div className="survey-head">
           <div className="survey-head-row">
             <h1 className="survey-title">AI productivity survey</h1>
-            <span className="survey-meta">10 questions · about 5 minutes</span>
+            <span className="survey-meta">8 questions</span>
           </div>
           <p className="survey-subtitle">
             Responses are reported in aggregate and used to prioritise AI tooling, training, and investment.{" "}
@@ -127,8 +185,8 @@ export function SurveyPage() {
         )}
 
         <div className="survey-group">
-          <h2 className="group-title">About you</h2>
-          <p className="group-subtitle">Used to route your response to the correct hierarchy.</p>
+          <h2 className="group-title">Employee context</h2>
+          <p className="group-subtitle">Select your name to load your level.</p>
           <EmployeePicker
             employees={employees}
             loading={loadingEmployees}
@@ -142,92 +200,140 @@ export function SurveyPage() {
         </div>
 
         <div className="survey-group">
-          <h2 className="group-title">Adoption</h2>
-          <p className="group-subtitle">How AI shows up in your day-to-day work today.</p>
+          <h2 className="group-title">Usage and value</h2>
+          <p className="group-subtitle">How often you use AI, where it helps most, and time saved.</p>
+
           <SingleSelectQuestion
-            legend="How often do you currently use AI for work?"
+            legend="Q1. How often do you currently use AI for work?"
             options={AI_USAGE_FREQUENCY}
-            value={answers.ai_usage_frequency}
-            onChange={(v) => setAnswer("ai_usage_frequency", v)}
+            value={aiUsageFrequency}
+            onChange={(v) => {
+              setAiUsageFrequency(v);
+              setErrors((prev) => ({ ...prev, ai_usage_frequency: false }));
+            }}
             error={errors.ai_usage_frequency}
           />
-          <RankQuestion
-            legend="Rank the top 3 areas where AI provides the most value in your workflow."
-            options={TOP_VALUE_AREAS}
-            ranked={rankedAreas}
-            onToggle={toggleTopValueArea}
-            requiredCount={TOP_VALUE_AREA_RANK_COUNT}
-            error={errors.top_value_areas}
-          />
-        </div>
 
-        <div className="survey-group">
-          <h2 className="group-title">Impact</h2>
-          <p className="group-subtitle">Time saved, throughput, and quality of output.</p>
+          <div className="field">
+            <RankQuestion
+              legend="Q2. Rank the top 3 areas where AI provides the most value in your workflow."
+              options={TOP_VALUE_AREAS}
+              ranked={rankedAreas}
+              onToggle={toggleTopValueArea}
+              requiredCount={TOP_VALUE_AREA_RANK_COUNT}
+              error={errors.top_value_areas}
+            />
+            {includesOtherArea && (
+              <OtherTextInput
+                value={topValueAreaOtherText}
+                onChange={(v) => {
+                  setTopValueAreaOtherText(v);
+                  setErrors((prev) => ({ ...prev, top_value_area_other: false }));
+                }}
+                error={errors.top_value_area_other}
+              />
+            )}
+          </div>
+
           <SingleSelectQuestion
-            legend="In a typical week, approximately how much work time does AI save you?"
+            legend="Q3. In a typical week, approximately how much work time does AI save you?"
             options={WEEKLY_TIME_SAVED}
-            value={answers.weekly_time_saved}
-            onChange={(v) => setAnswer("weekly_time_saved", v)}
+            value={weeklyTimeSaved}
+            onChange={(v) => {
+              setWeeklyTimeSaved(v);
+              setErrors((prev) => ({ ...prev, weekly_time_saved: false }));
+            }}
             error={errors.weekly_time_saved}
           />
+        </div>
+
+        <div className="survey-group">
+          <h2 className="group-title">Impact on your work</h2>
+          <p className="group-subtitle">Output, quality, and how much correction AI output needs.</p>
+
           <SingleSelectQuestion
-            legend="Compared with working without AI, how has AI affected the amount of work you can complete in the same amount of time?"
+            legend="Q4. Compared with working without AI, how has AI affected the amount of work you can complete in the same amount of time?"
             options={WORK_OUTPUT_CHANGE}
-            value={answers.work_output_change}
-            onChange={(v) => setAnswer("work_output_change", v)}
+            value={workOutputChange}
+            onChange={(v) => {
+              setWorkOutputChange(v);
+              setErrors((prev) => ({ ...prev, work_output_change: false }));
+            }}
             error={errors.work_output_change}
+            layout="likert"
           />
           <SingleSelectQuestion
-            legend="How has AI affected the quality of your work?"
+            legend="Q5. How has AI affected the quality of your work?"
             options={QUALITY_CHANGE}
-            value={answers.quality_change}
-            onChange={(v) => setAnswer("quality_change", v)}
+            value={qualityChange}
+            onChange={(v) => {
+              setQualityChange(v);
+              setErrors((prev) => ({ ...prev, quality_change: false }));
+            }}
             error={errors.quality_change}
+            layout="likert"
           />
           <SingleSelectQuestion
-            legend="How often do you need to substantially correct or rewrite AI-generated output before using it?"
+            legend="Q6. How often do you need to substantially correct or rewrite AI-generated output before using it?"
             options={CORRECTION_FREQUENCY}
-            value={answers.correction_frequency}
-            onChange={(v) => setAnswer("correction_frequency", v)}
+            value={correctionFrequency}
+            onChange={(v) => {
+              setCorrectionFrequency(v);
+              setErrors((prev) => ({ ...prev, correction_frequency: false }));
+            }}
             error={errors.correction_frequency}
+            layout="likert"
           />
         </div>
 
         <div className="survey-group">
-          <h2 className="group-title">Barriers and opportunities</h2>
-          <p className="group-subtitle">What's in the way, and where AI has become load-bearing.</p>
-          <SingleSelectQuestion
-            legend="What is the biggest benefit AI provides in your day-to-day work?"
-            options={BIGGEST_BENEFIT}
-            value={answers.biggest_benefit}
-            onChange={(v) => setAnswer("biggest_benefit", v)}
-            error={errors.biggest_benefit}
-            layout="grid"
-          />
-          <SingleSelectQuestion
-            legend="What is the biggest barrier preventing you from getting more value from AI?"
-            options={BIGGEST_BARRIER}
-            value={answers.biggest_barrier}
-            onChange={(v) => setAnswer("biggest_barrier", v)}
-            error={errors.biggest_barrier}
-            layout="grid"
-          />
-          <SingleSelectQuestion
-            legend="In a typical week, approximately how many meaningful work items does AI help you complete or move forward?"
-            options={WEEKLY_WORK_ITEMS}
-            value={answers.weekly_work_items}
-            onChange={(v) => setAnswer("weekly_work_items", v)}
-            error={errors.weekly_work_items}
-          />
-          <SingleSelectQuestion
-            legend="If AI tools were unavailable tomorrow, which part of your work would be most negatively affected?"
-            options={MOST_IMPACTED_WORKFLOW}
-            value={answers.most_impacted_workflow}
-            onChange={(v) => setAnswer("most_impacted_workflow", v)}
-            error={errors.most_impacted_workflow}
-            layout="grid"
-          />
+          <h2 className="group-title">Benefits and barriers</h2>
+          <p className="group-subtitle">The single biggest benefit, and what limits effective use.</p>
+
+          <div className="field">
+            <SingleSelectQuestion
+              legend="Q7. What is the biggest benefit AI provides in your day-to-day work?"
+              options={BIGGEST_BENEFIT}
+              value={biggestBenefit}
+              onChange={(v) => {
+                setBiggestBenefit(v);
+                setErrors((prev) => ({ ...prev, biggest_benefit: false }));
+              }}
+              error={errors.biggest_benefit}
+              layout="grid"
+            />
+            {showBiggestBenefitOther && (
+              <OtherTextInput
+                value={biggestBenefitOtherText}
+                onChange={(v) => {
+                  setBiggestBenefitOtherText(v);
+                  setErrors((prev) => ({ ...prev, biggest_benefit_other: false }));
+                }}
+                error={errors.biggest_benefit_other}
+              />
+            )}
+          </div>
+
+          <div className="field">
+            <MultiSelectQuestion
+              legend="Q8. What barriers limit your effective use of AI at work?"
+              hint="Select all that apply."
+              options={BARRIERS}
+              value={barrierCodes}
+              onToggle={toggleBarrier}
+              error={errors.barriers}
+            />
+            {includesOtherBarrier && (
+              <OtherTextInput
+                value={barriersOtherText}
+                onChange={(v) => {
+                  setBarriersOtherText(v);
+                  setErrors((prev) => ({ ...prev, barriers_other: false }));
+                }}
+                error={errors.barriers_other}
+              />
+            )}
+          </div>
         </div>
 
         <div className="survey-footer">

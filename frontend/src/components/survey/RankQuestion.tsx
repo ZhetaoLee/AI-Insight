@@ -1,10 +1,10 @@
 import type { CSSProperties } from "react";
-import type { SurveyOption, TopValueArea } from "../../types/survey";
+import type { RankedArea, SurveyOption } from "../../types/survey";
 
 interface RankQuestionProps {
   legend: string;
   options: SurveyOption[];
-  ranked: TopValueArea[];
+  ranked: RankedArea[];
   onToggle: (code: string) => void;
   requiredCount: number;
   error?: boolean;

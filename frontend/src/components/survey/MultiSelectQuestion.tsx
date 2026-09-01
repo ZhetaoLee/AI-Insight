@@ -1,44 +1,42 @@
 import type { CSSProperties } from "react";
 import type { SurveyOption } from "../../types/survey";
 
-interface SingleSelectQuestionProps {
+interface MultiSelectQuestionProps {
   legend: string;
+  hint?: string;
   options: SurveyOption[];
-  value: string | null;
-  onChange: (code: string) => void;
+  value: string[];
+  onToggle: (code: string) => void;
   error?: boolean;
   errorLabel?: string;
-  layout?: "row" | "grid" | "likert";
 }
 
-export function SingleSelectQuestion({
+export function MultiSelectQuestion({
   legend,
+  hint,
   options,
   value,
-  onChange,
+  onToggle,
   error,
-  errorLabel = "Select one",
-  layout = "row",
-}: SingleSelectQuestionProps) {
-  const listClass =
-    layout === "grid" ? "option-grid" : layout === "likert" ? "option-likert" : "option-row";
-
+  errorLabel = "Select at least one",
+}: MultiSelectQuestionProps) {
   return (
     <div className="field">
-      <div className="field-label">
+      <div className="field-label" style={{ marginBottom: hint ? 4 : 12 }}>
         {legend}
         <span className="required-mark">*</span>
         {error ? <span className="error-inline">{errorLabel}</span> : null}
       </div>
-      <div className={listClass}>
+      {hint ? <div className="rank-hint">{hint}</div> : null}
+      <div className="option-grid">
         {options.map((option) => {
-          const isOn = value === option.code;
+          const isOn = value.includes(option.code);
           return (
             <button
               key={option.code}
               type="button"
-              className={layout === "likert" ? "radio-option radio-option-likert" : "radio-option"}
-              onClick={() => onChange(option.code)}
+              className="checkbox-option"
+              onClick={() => onToggle(option.code)}
               aria-pressed={isOn}
               style={
                 {
@@ -47,9 +45,7 @@ export function SingleSelectQuestion({
                 } as CSSProperties
               }
             >
-              <span className="radio-dot-outer">
-                <span className="radio-dot-inner" />
-              </span>
+              <span className="checkbox-box" />
               {option.label}
             </button>
           );
