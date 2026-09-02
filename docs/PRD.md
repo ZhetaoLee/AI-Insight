@@ -1171,6 +1171,9 @@ Numeric unit conventions:
 - `RateMetric.value` fields are fractions from `0` to `1`.
 - `DistributionRow.pct` and `group_breakdown` rate fields are whole percentages from `0` to `100`.
 - Counts and denominators are integers.
+- `group_breakdown.rows[].top_barrier = null` means no actual barrier data is
+  available for that group. Dashboard records should render this as unavailable
+  data, not as `No major barriers`.
 
 The response shape must remain compatible with `frontend/src/types/metrics.ts`. The frontend should not duplicate business metric calculations.
 

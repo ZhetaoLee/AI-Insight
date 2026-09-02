@@ -202,6 +202,8 @@ test("employee survey submission is reflected in the executive dashboard", async
   await expect(distributionGrid.locator(".info-tooltip").first()).toHaveCSS("opacity", "1");
   const recordsTable = page.locator(".table-card");
   await expect(recordsTable.getByText("Level records", { exact: true })).toBeVisible();
+  await expect(recordsTable.getByText("No barrier data")).toHaveCount(3);
+  await expect(recordsTable.getByText("No major barriers")).toHaveCount(0);
   await expect(recordsTable.locator(".table-footer")).toHaveCount(0);
   await expect(recordsTable).not.toContainText("Seeded demonstration data");
   await expect(recordsTable).not.toContainText("fielded Q3 2026");

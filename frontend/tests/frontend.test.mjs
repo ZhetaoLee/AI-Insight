@@ -13,6 +13,7 @@ import { fetchDashboardMetrics, fetchOrgDirectory } from "../src/api/metrics.ts"
 import { fetchSubmittedEmployeeIds, submitSurveyResponse } from "../src/api/survey.ts";
 import { ANALYSIS_WEEKLY_TIME_SAVED } from "../src/components/dashboard/ComboAnalysisCard.tsx";
 import { topActualBarrierRow } from "../src/components/dashboard/DistributionPanels.tsx";
+import { topBarrierLabel } from "../src/components/dashboard/RecordsTable.tsx";
 import { buildChildrenMap, resolveDashboardManagerId, subtreeOf } from "../src/lib/dashboardScope.ts";
 
 const validSurveyState = (overrides = {}) => ({
@@ -663,6 +664,12 @@ test("records table does not render footer disclaimer text", async () => {
   assert.equal(recordsTableSource.includes("denominators shown per metric"), false);
   assert.equal(dashboardPageSource.includes("eligibleTotal="), false);
   assert.equal(dashboardStyles.includes(".table-footer"), false);
+});
+
+test("records table labels null top barrier as unavailable data", () => {
+  assert.equal(topBarrierLabel(null), "No barrier data");
+  assert.equal(topBarrierLabel({ code: "no_major_barriers", label: "No major barriers" }), "No major barriers");
+  assert.equal(topBarrierLabel({ code: "lack_of_training", label: "Lack of training" }), "Lack of training");
 });
 
 test("employee directory fallback is used only when the backend is unreachable", async () => {

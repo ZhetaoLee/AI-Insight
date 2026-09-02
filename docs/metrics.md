@@ -210,7 +210,9 @@ Required group row fields:
 - `adoption_rate`: `active_ai_users / respondents`, returned as a whole percentage.
 - `more_output_rate`: `reports_more_output / respondents_who_answered_Q4`, returned as a whole percentage.
 - `frequent_rework_rate`: `frequent_rework / respondents_who_answered_Q6`, returned as a whole percentage.
-- `top_barrier`: highest-count Q8 barrier for the group, or `null` when unavailable.
+- `top_barrier`: highest-count actual Q8 barrier for the group, excluding
+  `no_major_barriers`; return `null` when unavailable. Dashboard records should
+  display `null` as unavailable data, not as `No major barriers`.
 
 ## Missing Data Rule
 

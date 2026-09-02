@@ -17,6 +17,10 @@ const COLUMNS: { key: SortKey | "top_barrier"; label: string; align: "left" | "r
   { key: "top_barrier", label: "Top barrier", align: "left", sortable: false },
 ];
 
+export function topBarrierLabel(topBarrier: GroupRow["top_barrier"]): string {
+  return topBarrier?.label ?? "No barrier data";
+}
+
 export function RecordsTable({ groupBreakdown }: RecordsTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>("adoption_rate");
   const [sortDir, setSortDir] = useState<1 | -1>(-1);
@@ -102,7 +106,7 @@ export function RecordsTable({ groupBreakdown }: RecordsTableProps) {
                       {r.respondents ? `${reworkPct}%` : "—"}
                     </span>
                   </td>
-                  <td style={{ color: "#6d7783" }}>{r.top_barrier ? r.top_barrier.label : "No major barriers"}</td>
+                  <td style={{ color: "#6d7783" }}>{topBarrierLabel(r.top_barrier)}</td>
                 </tr>
               );
             })}
