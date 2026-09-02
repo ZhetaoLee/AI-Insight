@@ -133,7 +133,7 @@ No login is required for the take-home implementation.
 A leadership user can:
 
 - View organization-wide AI productivity metrics.
-- View metrics for a specific manager's organizational subtree.
+- View metrics for a specific leader's organizational subtree from the hierarchy tree.
 - Compare results by organizational level.
 - View response coverage.
 - Understand which workflows receive the most AI value.
@@ -173,6 +173,10 @@ Survey
 
 The sidebar should be shared by `/dashboard` and `/survey`; the two destinations
 should not also be duplicated in a separate top navigation bar.
+
+While on `/dashboard`, the sidebar also shows an "Organization" section holding
+the hierarchy scope-selection tree described in §18 — the tree is sidebar content,
+not part of the dashboard's top toolbar, and it does not appear on `/survey`.
 
 ---
 
@@ -639,13 +643,22 @@ Individual Contributor  67%        3.2h             70%
 
 # 18. Dashboard Scope Filtering
 
-The dashboard must support:
+The dashboard metrics API must support:
 
 ```text
 Organization
 Level
 Manager
 ```
+
+The dashboard UI presents this as two control modes:
+
+- Hierarchy: one org-chart tree with an Organization root and nested Senior Director, Director, Manager, and Individual Contributor nodes, rendered as an "Organization" section in the persistent left sidebar (see §6) with connecting branch lines so the parent/child structure reads visually as a tree, not a flat indented list.
+- Level: one cross-cutting level selector, shown in the dashboard's top toolbar.
+
+In hierarchy mode, the Organization root selects org-wide scope. Senior Director, Director, and Manager nodes select `scope=manager&scope_id=<employee_id>` and include that employee plus all descendants. Individual Contributor nodes are visible as leaves for context but are not selectable.
+
+The top-toolbar button that switches the dashboard into hierarchy mode is not a static "Hierarchy" label: its visible text always names the currently selected node, so leadership can tell at a glance what they're looking at — "Organization Dashboard" for the org-wide root, or "Senior Director Dashboard" / "Director Dashboard" / "Manager Dashboard" when a node at that level is selected in the sidebar tree.
 
 Examples:
 

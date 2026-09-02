@@ -12,7 +12,7 @@ import { SEED_EMPLOYEES, fetchEmployees } from "../src/api/employees.ts";
 import { fetchDashboardMetrics, fetchOrgDirectory } from "../src/api/metrics.ts";
 import { fetchSubmittedEmployeeIds, submitSurveyResponse } from "../src/api/survey.ts";
 import { ANALYSIS_WEEKLY_TIME_SAVED } from "../src/components/dashboard/ComboAnalysisCard.tsx";
-import { resolveDashboardManagerId } from "../src/lib/dashboardScope.ts";
+import { buildChildrenMap, resolveDashboardManagerId, subtreeOf } from "../src/lib/dashboardScope.ts";
 
 const validSurveyState = (overrides = {}) => ({
   employeeId: "emp_104",
@@ -236,6 +236,82 @@ test("dashboard manager selection keeps leaders and replaces stale individual co
   assert.equal(resolveDashboardManagerId([], "d1"), "d1");
 });
 
+test("dashboard hierarchy helper covers org root through IC leaves", () => {
+  const children = buildChildrenMap(SEED_EMPLOYEES);
+
+  assert.deepEqual(children.get("emp_101")?.map((employee) => employee.id), ["emp_102", "emp_106"]);
+  assert.deepEqual(children.get("emp_102")?.map((employee) => employee.id), ["emp_103"]);
+  assert.deepEqual(children.get("emp_103")?.map((employee) => employee.id), ["emp_104", "emp_105"]);
+  assert.deepEqual(children.get("emp_106")?.map((employee) => employee.id), ["emp_107", "emp_109"]);
+  assert.deepEqual(children.get("emp_107")?.map((employee) => employee.id), ["emp_108"]);
+  assert.deepEqual(children.get("emp_109")?.map((employee) => employee.id), ["emp_110"]);
+  assert.deepEqual(subtreeOf(SEED_EMPLOYEES, "emp_101").map((employee) => employee.id), [
+    "emp_101",
+    "emp_102",
+    "emp_103",
+    "emp_104",
+    "emp_105",
+    "emp_106",
+    "emp_107",
+    "emp_108",
+    "emp_109",
+    "emp_110",
+  ]);
+});
+
+test("dashboard toolbar uses a full org hierarchy tree for org and manager scope", async () => {
+  const [toolbarSource, orgTreeSource] = await Promise.all([
+    readFile(new URL("../src/components/dashboard/DashboardToolbar.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/dashboard/OrgChartTree.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(toolbarSource.includes('t === "org"'), false);
+  assert.equal(toolbarSource.includes('t === "manager"'), false);
+  assert.equal(toolbarSource.includes('className="toolbar-picker" value={managerId}'), false);
+  assert.equal(orgTreeSource.includes('aria-label="Organization hierarchy"'), true);
+  assert.equal(orgTreeSource.includes("Organization"), true);
+  assert.equal(orgTreeSource.includes('employee.level === "ic"'), true);
+  assert.equal(orgTreeSource.includes("org-tree-leaf"), true);
+  assert.equal(orgTreeSource.includes("LEVEL_LABELS[employee.level]"), true);
+});
+
+test("hierarchy toggle button label names the currently selected scope instead of a static word", async () => {
+  const [toolbarSource, dashboardPageSource, layoutSource] = await Promise.all([
+    readFile(new URL("../src/components/dashboard/DashboardToolbar.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/DashboardPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/layout/AppLayout.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(toolbarSource.includes("hierarchyLabel"), true);
+  assert.equal(toolbarSource.includes("Hierarchy"), false);
+  assert.equal(dashboardPageSource.includes("hierarchyLabel"), true);
+  assert.equal(layoutSource.includes('"Organization Dashboard"'), true);
+  assert.equal(layoutSource.includes("${LEVEL_LABELS[selectedHierarchyEmployee.level]} Dashboard"), true);
+});
+
+test("org hierarchy tree lives in the persistent sidebar, not the dashboard toolbar", async () => {
+  const [toolbarSource, dashboardPageSource, sidebarSource, layoutSource, layoutStyles, dashboardStyles] = await Promise.all([
+    readFile(new URL("../src/components/dashboard/DashboardToolbar.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/DashboardPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/dashboard/DashboardSidebar.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/layout/AppLayout.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/layout/AppLayout.css", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/DashboardPage.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(toolbarSource.includes("OrgChartTree"), false);
+  assert.equal(dashboardPageSource.includes("OrgChartTree"), false);
+  assert.equal(sidebarSource.includes("OrgChartTree"), true);
+  assert.equal(sidebarSource.includes("Organization"), true);
+  assert.equal(layoutSource.includes("HierarchyScope"), true);
+  assert.equal(layoutStyles.includes(".org-tree"), true);
+  assert.equal(layoutStyles.includes(".org-tree-leaf"), true);
+  assert.equal(dashboardStyles.includes(".org-tree"), false);
+  // real branch/connector lines, not just an indented list of flat boxes
+  assert.equal(layoutStyles.includes(".org-tree-branch > .org-tree-item::before"), true);
+  assert.equal(layoutStyles.includes(".org-tree-branch > .org-tree-item::after"), true);
+});
+
 test("dashboard toolbar does not render a nonfunctional search placeholder", async () => {
   const [toolbarSource, dashboardStyles] = await Promise.all([
     readFile(new URL("../src/components/dashboard/DashboardToolbar.tsx", import.meta.url), "utf8"),
@@ -435,7 +511,7 @@ test("app navigation is a persistent dashboard and survey sidebar", async () => 
   assert.equal(layoutSource.includes("<header"), false);
   assert.equal(layoutSource.includes("Submit Survey"), false);
   assert.equal(layoutSource.includes("DashboardSidebar"), true);
-  assert.equal(layoutSource.includes("<Outlet />"), true);
+  assert.equal(layoutSource.includes("<Outlet"), true);
   assert.equal(sidebarSource.includes("NavLink"), true);
   assert.equal(sidebarSource.includes('to: "/dashboard"'), true);
   assert.equal(sidebarSource.includes('to: "/survey"'), true);

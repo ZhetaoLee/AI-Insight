@@ -1,11 +1,23 @@
 import { NavLink } from "react-router-dom";
+import type { Employee } from "../../types/employee";
+import { OrgChartTree, type HierarchyScope } from "./OrgChartTree";
 
 const NAV_ITEMS = [
   { label: "Dashboard", to: "/dashboard" },
   { label: "Survey", to: "/survey" },
 ];
 
-export function DashboardSidebar() {
+export interface DashboardSidebarHierarchy {
+  employees: Employee[];
+  selectedScope: HierarchyScope;
+  onSelect: (scope: HierarchyScope) => void;
+}
+
+interface DashboardSidebarProps {
+  hierarchy?: DashboardSidebarHierarchy;
+}
+
+export function DashboardSidebar({ hierarchy }: DashboardSidebarProps) {
   return (
     <aside className="dashboard-sidebar" aria-label="Primary navigation">
       <div className="sidebar-brand">
@@ -29,6 +41,13 @@ export function DashboardSidebar() {
           );
         })}
       </nav>
+
+      {hierarchy && (
+        <div className="sidebar-hierarchy" aria-label="Organization">
+          <div className="sidebar-nav-label">Organization</div>
+          <OrgChartTree employees={hierarchy.employees} selectedScope={hierarchy.selectedScope} onSelect={hierarchy.onSelect} />
+        </div>
+      )}
     </aside>
   );
 }

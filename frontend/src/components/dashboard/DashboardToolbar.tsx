@@ -1,63 +1,47 @@
-import { LEVEL_LABELS, type Employee, type EmployeeLevel } from "../../types/employee";
-import { subtreeOf } from "../../lib/dashboardScope";
+import { LEVEL_LABELS, type EmployeeLevel } from "../../types/employee";
 
 const LEVEL_ORDER: EmployeeLevel[] = ["senior_director", "director", "manager", "ic"];
+type ScopeType = "org" | "manager" | "level";
 
 interface DashboardToolbarProps {
-  scopeType: "org" | "manager" | "level";
-  managerId: string;
+  scopeType: ScopeType;
   level: EmployeeLevel;
-  orgEmployees: Employee[];
-  onScopeTypeChange: (type: "org" | "manager" | "level") => void;
-  onManagerChange: (id: string) => void;
+  hierarchyLabel: string;
+  onScopeTypeChange: (type: ScopeType) => void;
   onLevelChange: (level: EmployeeLevel) => void;
 }
 
-export function DashboardToolbar({
-  scopeType,
-  managerId,
-  level,
-  orgEmployees,
-  onScopeTypeChange,
-  onManagerChange,
-  onLevelChange,
-}: DashboardToolbarProps) {
-  const leaders = orgEmployees.filter((e) => e.level !== "ic");
-
+export function DashboardToolbar({ scopeType, level, hierarchyLabel, onScopeTypeChange, onLevelChange }: DashboardToolbarProps) {
   return (
     <div className="dashboard-toolbar">
-      <div className="toggle-group">
-        {(["org", "manager", "level"] as const).map((t) => (
+      <div className="toolbar-mode-row">
+        <div className="toggle-group">
           <button
-            key={t}
             type="button"
-            className={scopeType === t ? "toggle-btn active" : "toggle-btn"}
-            onClick={() => onScopeTypeChange(t)}
+            className={scopeType === "level" ? "toggle-btn" : "toggle-btn active"}
+            onClick={() => onScopeTypeChange("org")}
           >
-            {t === "org" ? "Organization" : t === "manager" ? "Manager" : "Level"}
+            {hierarchyLabel}
           </button>
-        ))}
+          <button
+            type="button"
+            className={scopeType === "level" ? "toggle-btn active" : "toggle-btn"}
+            onClick={() => onScopeTypeChange("level")}
+          >
+            Level
+          </button>
+        </div>
+
+        {scopeType === "level" && (
+          <select className="toolbar-picker" value={level} onChange={(e) => onLevelChange(e.target.value as EmployeeLevel)}>
+            {LEVEL_ORDER.map((l) => (
+              <option key={l} value={l}>
+                {LEVEL_LABELS[l]}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
-
-      {scopeType === "manager" && (
-        <select className="toolbar-picker" value={managerId} onChange={(e) => onManagerChange(e.target.value)}>
-          {leaders.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name} · {LEVEL_LABELS[p.level]} ({subtreeOf(orgEmployees, p.id).length - 1} reports)
-            </option>
-          ))}
-        </select>
-      )}
-
-      {scopeType === "level" && (
-        <select className="toolbar-picker" value={level} onChange={(e) => onLevelChange(e.target.value as EmployeeLevel)}>
-          {LEVEL_ORDER.map((l) => (
-            <option key={l} value={l}>
-              {LEVEL_LABELS[l]}
-            </option>
-          ))}
-        </select>
-      )}
     </div>
   );
 }

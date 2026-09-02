@@ -8,12 +8,19 @@
 
 .dashboard-toolbar {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 14px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
   padding: 16px 26px;
   border-bottom: 1px solid var(--db-border);
   min-width: 0;
+}
+
+.toolbar-mode-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
 }
 
 .toggle-group {

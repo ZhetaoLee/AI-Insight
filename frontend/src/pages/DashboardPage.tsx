@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { fetchDashboardMetrics, fetchOrgDirectory } from "../api/metrics";
+import { useOutletContext } from "react-router-dom";
+import { fetchDashboardMetrics } from "../api/metrics";
 import { AdoptionSidePanel } from "../components/dashboard/AdoptionSidePanel";
 import { ComboAnalysisCard } from "../components/dashboard/ComboAnalysisCard";
 import { DashboardToolbar } from "../components/dashboard/DashboardToolbar";
@@ -7,16 +8,14 @@ import { DistributionPanels } from "../components/dashboard/DistributionPanels";
 import { HeroCards } from "../components/dashboard/HeroCards";
 import { RecordsTable } from "../components/dashboard/RecordsTable";
 import { ValueAreaRankingCard } from "../components/dashboard/ValueAreaRankingCard";
-import { resolveDashboardManagerId } from "../lib/dashboardScope";
-import { LEVEL_LABELS, type Employee, type EmployeeLevel } from "../types/employee";
+import type { DashboardScopeContext } from "../components/layout/AppLayout";
+import { LEVEL_LABELS } from "../types/employee";
 import type { DashboardMetricsResponse, DashboardScope, Q3Q5Criteria } from "../types/metrics";
 import "./DashboardPage.css";
 
 export function DashboardPage() {
-  const [orgEmployees, setOrgEmployees] = useState<Employee[]>([]);
-  const [scopeType, setScopeType] = useState<"org" | "manager" | "level">("org");
-  const [managerId, setManagerId] = useState("d1");
-  const [level, setLevel] = useState<EmployeeLevel>("ic");
+  const { scopeType, managerId, level, orgEmployees, hierarchyLabel, setScopeType, setLevel } =
+    useOutletContext<DashboardScopeContext>();
   const [q3Q5Criteria, setQ3Q5Criteria] = useState<Q3Q5Criteria>({
     weekly_time_saved: "more_than_5_hours",
     work_output_change: "slightly_more",
@@ -24,15 +23,6 @@ export function DashboardPage() {
   });
   const [metrics, setMetrics] = useState<DashboardMetricsResponse | null>(null);
   const [metricsError, setMetricsError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchOrgDirectory().then(setOrgEmployees);
-  }, []);
-
-  useEffect(() => {
-    const nextManagerId = resolveDashboardManagerId(orgEmployees, managerId);
-    if (nextManagerId !== managerId) setManagerId(nextManagerId);
-  }, [managerId, orgEmployees]);
 
   const scope: DashboardScope = useMemo(() => {
     if (scopeType === "org") return { type: "org" };
@@ -67,22 +57,20 @@ export function DashboardPage() {
 
   const managerName = scopeType === "manager" ? orgEmployees.find((e) => e.id === managerId)?.name ?? "" : "";
   const scopeCaption =
-    scopeType === "org"
-      ? "All employees. Every rate is computed from individual responses in scope, never averaged up from group percentages."
-      : scopeType === "manager"
-        ? `Manager scope: ${managerName} plus all descendants, resolved to individual responses.`
-        : `Level scope: all employees at ${LEVEL_LABELS[level]}, resolved to individual responses.`;
+    scopeType === "manager"
+      ? `Manager scope: ${managerName} plus all descendants, resolved to individual responses.`
+      : scopeType === "level"
+        ? `Level scope: all employees at ${LEVEL_LABELS[level]}, resolved to individual responses.`
+        : "";
   const responseRatePct = Math.round(metrics.coverage.response_rate * 100);
 
   return (
     <div className="dashboard-page">
       <DashboardToolbar
         scopeType={scopeType}
-        managerId={managerId}
         level={level}
-        orgEmployees={orgEmployees}
+        hierarchyLabel={hierarchyLabel}
         onScopeTypeChange={setScopeType}
-        onManagerChange={setManagerId}
         onLevelChange={setLevel}
       />
 
@@ -90,7 +78,7 @@ export function DashboardPage() {
         <div className="content-header">
           <div className="content-heading">
             <div className="content-title">Executive overview</div>
-            <div className="content-caption">{scopeCaption}</div>
+            {scopeCaption && <div className="content-caption">{scopeCaption}</div>}
           </div>
           <button type="button" className="reset-scope-btn" onClick={() => setScopeType("org")}>
             Reset scope

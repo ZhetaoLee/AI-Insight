@@ -1,6 +1,6 @@
 import type { Employee } from "../types/employee";
 
-function buildChildrenMap(employees: Employee[]): Map<string, Employee[]> {
+export function buildChildrenMap(employees: Employee[]): Map<string, Employee[]> {
   const map = new Map<string, Employee[]>();
   for (const employee of employees) {
     if (!employee.manager_id) continue;

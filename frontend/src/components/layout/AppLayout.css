@@ -148,6 +148,140 @@
   flex: 1;
 }
 
+.sidebar-hierarchy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.org-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.org-tree-branch {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.org-tree-top {
+  margin-top: 2px;
+}
+
+.org-tree-item {
+  position: relative;
+}
+
+.org-tree-branch > .org-tree-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -8px;
+  width: 1px;
+  height: 100%;
+  background: #d7dde2;
+}
+
+.org-tree-branch > .org-tree-item:last-child::before {
+  height: 17px;
+}
+
+.org-tree-branch > .org-tree-item::after {
+  content: "";
+  position: absolute;
+  top: 17px;
+  left: -8px;
+  width: 8px;
+  height: 1px;
+  background: #d7dde2;
+}
+
+.org-tree-root,
+.org-tree-node {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--db-text);
+  font-family: inherit;
+  text-align: left;
+  padding: 5px 8px;
+}
+
+.org-tree-root {
+  font-weight: 700;
+  border-color: #e2e6e9;
+  background: #fff;
+}
+
+.org-tree-button {
+  cursor: pointer;
+}
+
+.org-tree-button:hover,
+.org-tree-root:hover {
+  background: var(--db-border-2);
+}
+
+.org-tree-root.selected,
+.org-tree-button.selected {
+  border-color: rgba(31, 157, 124, 0.42);
+  background: #eef8f4;
+  box-shadow: inset 0 0 0 1px rgba(31, 157, 124, 0.16);
+}
+
+.org-tree-leaf {
+  color: var(--db-muted-2);
+}
+
+.org-tree-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #c6cfd7;
+  flex: none;
+}
+
+.org-tree-root.selected .org-tree-dot,
+.org-tree-button.selected .org-tree-dot {
+  background: var(--db-accent);
+}
+
+.org-tree-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.org-tree-name {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.org-tree-meta {
+  font-size: 10px;
+  color: var(--db-muted-3);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 860px) {
   .app-shell {
     padding: 12px;
