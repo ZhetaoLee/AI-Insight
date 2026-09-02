@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
+EMPLOYEE_LEVELS = ("senior_director", "director", "manager", "ic")
 EmployeeLevel = Literal["senior_director", "director", "manager", "ic"]
 
 

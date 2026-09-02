@@ -12,12 +12,12 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - `docs/PRD.md`, `docs/ADR.md`, `docs/Questions.md`, and `docs/metrics.md` are the implementation references.
 - `docs/Questions.md` is the single canonical survey question and answer-code source.
 
-## Plan 2: Backend TDD Setup [In Progress]
+## Plan 2: Backend TDD Setup [Complete]
 
 - Pytest, pytest-asyncio, and httpx test client support are configured.
-- Create deterministic employee and response fixtures.
-- Test exactly 10 seeded mock employees across Senior Director, Director, Manager, and IC levels. Initial seed-shape coverage exists.
-- Test hierarchy traversal, manager subtree resolution, level filtering, and cycle protection before implementation.
+- Deterministic employee and response fixtures exist.
+- Tests cover exactly 10 seeded mock employees across Senior Director, Director, Manager, and IC levels.
+- Tests cover hierarchy traversal, manager subtree resolution, level filtering, hierarchy cycle protection, and active survey-cycle filtering.
 
 ## Plan 3: Survey Submission API
 
