@@ -9,6 +9,7 @@ import {
 } from "../src/lib/surveyForm.ts";
 import { fetchEmployees } from "../src/api/employees.ts";
 import { fetchDashboardMetrics, fetchOrgDirectory } from "../src/api/metrics.ts";
+import { ANALYSIS_WEEKLY_TIME_SAVED } from "../src/components/dashboard/ComboAnalysisCard.tsx";
 import { resolveDashboardManagerId } from "../src/lib/dashboardScope.ts";
 
 const validSurveyState = (overrides = {}) => ({
@@ -174,6 +175,18 @@ test("dashboard metrics omits scope_id for org requests", async () => {
   const params = new URL(requestedUrl, "http://localhost").searchParams;
   assert.equal(params.get("scope"), "org");
   assert.equal(params.has("scope_id"), false);
+});
+
+test("dashboard Q3-Q5 analysis excludes not_sure from selectable Q3 criteria", () => {
+  const q3CriteriaCodes = ANALYSIS_WEEKLY_TIME_SAVED.map((option) => option.code);
+
+  assert.deepEqual(q3CriteriaCodes, [
+    "no_noticeable_time_saved",
+    "less_than_1_hour",
+    "1_5_hours",
+    "more_than_5_hours",
+  ]);
+  assert.equal(q3CriteriaCodes.includes("not_sure"), false);
 });
 
 test("dashboard metrics does not use local fallback for backend errors", async () => {
