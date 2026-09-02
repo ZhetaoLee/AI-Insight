@@ -1,0 +1,24 @@
+services:
+  mongo:
+    ports: !reset []
+    restart: unless-stopped
+    container_name: insight-mongo
+
+  backend:
+    ports: !reset []
+    environment:
+      CORS_ORIGINS: https://insight.zhetaoli.dev
+    restart: unless-stopped
+    container_name: insight-backend
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile.prod
+    ports: !override
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs:ro
+    restart: unless-stopped
+    container_name: insight-web

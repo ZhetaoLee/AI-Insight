@@ -13,3 +13,5 @@ __pycache__/
 *.py[cod]
 frontend/vite.config.js
 frontend/vite.config.d.ts
+nginx/certs/*.pem
+nginx/certs/*.key
