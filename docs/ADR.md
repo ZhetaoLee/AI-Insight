@@ -627,8 +627,8 @@ Example:
 ```text
 AI Adoption Rate = active_ai_users / respondents
 
-Average Estimated Weekly Time Saved =
-sum(estimated_hours) / respondents_with_known_Q3_values
+Q3 Weekly Time Saved Distribution =
+option_count / respondents_who_answered_Q3
 
 Dynamic Q3-Q5 Analysis =
 respondents matching selected Q3, Q4, and Q5 values / valid analysis denominator
@@ -683,13 +683,13 @@ will be represented internally as unknown rather than zero.
 Example:
 
 ```python
-estimated_hours_saved = None
+weekly_time_saved = "not_sure"
 ```
 
 not:
 
 ```python
-estimated_hours_saved = 0
+weekly_time_saved = "no_noticeable_time_saved"
 ```
 
 ---
@@ -708,39 +708,30 @@ and:
 I am not sure how many hours AI saves me.
 ```
 
-Treating both as zero would systematically bias metrics downward.
+Treating both as zero or "no noticeable time saved" would systematically distort
+the Q3 distribution and Q3-Q5 analysis denominator.
 
 Calculations will therefore include a valid-response denominator specific to the metric being computed.
 
 ---
 
-# 15. Decision 13 — Estimate Time Saved from Survey Bands
+# 15. Decision 13 — Keep Time Saved as Survey Bands
 
 ## Decision
 
-Q3 ranges will be converted into approximate hours using representative values.
-
-Example:
-
-```text
-No noticeable time saved → 0
-<1 hour                  → 0.5
-1-5                      → 3
->5                       → 8
-Not sure                 → null
-```
+Q3 ranges will remain categorical survey answers. The dashboard will display the
+selected-band distribution and will not convert bands into midpoint-derived hour
+estimates.
 
 ---
 
 ## Rationale
 
-Leadership benefits from an interpretable estimate such as:
+Q3 uses ranges rather than exact hours. Converting those ranges into precise
+hour values would introduce arbitrary assumptions, for example treating every
+`1-5 hours` answer as the same exact number of hours.
 
-```text
-4.2 hours saved / employee / week
-```
-
-rather than only:
+Leadership should see the distribution directly:
 
 ```text
 37% selected "1-5 hours"
@@ -968,7 +959,7 @@ EmployeeAISignals(
     quality_preserved=True,
     manageable_rework=True,
     high_value_user=True,
-    estimated_hours_saved=4.0,
+    weekly_time_saved_band="1_5_hours",
 )
 ```
 

@@ -37,15 +37,8 @@ class RateMetric(BaseModel):
     denominator: int
 
 
-class AverageMetric(BaseModel):
-    value: float
-    denominator: int
-
-
 class HeadlineMetrics(BaseModel):
     ai_adoption_rate: RateMetric
-    avg_weekly_hours_saved: AverageMetric
-    estimated_weekly_hours_saved: float
     reports_more_output: RateMetric
 
 
@@ -133,8 +126,6 @@ class GroupRow(BaseModel):
     respondents: int
     adoption_rate: int | None
     more_output_rate: int | None
-    avg_hours_saved: float | None
-    avg_hours_saved_denominator: int
     frequent_rework_rate: int | None
     top_barrier: TopBarrier | None
 

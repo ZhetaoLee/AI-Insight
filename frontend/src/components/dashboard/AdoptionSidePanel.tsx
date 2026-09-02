@@ -64,8 +64,7 @@ export function AdoptionSidePanel({ adoptionRate, groupBreakdown, groupLabel }: 
                 <div className="leaderboard-name-block">
                   <div className="leaderboard-name">{r.label}</div>
                   <div className="leaderboard-meta">
-                    {r.respondents} / {r.eligible_employees} responses ·{" "}
-                    {r.avg_hours_saved != null ? `${r.avg_hours_saved.toFixed(1)} h` : "—"} avg saved
+                    {r.respondents} / {r.eligible_employees} responses
                   </div>
                 </div>
                 <div className="leaderboard-value" style={{ color: valueColor }}>

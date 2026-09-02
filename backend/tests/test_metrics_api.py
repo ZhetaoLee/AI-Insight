@@ -132,8 +132,8 @@ def test_get_metrics_returns_org_metrics_with_default_criteria(metrics_api_clien
     assert body["coverage"] == {"eligible_employees": 10, "respondents": 2, "response_rate": 0.2}
     assert body["population"]["active_ai_users"] == 1
     assert body["headline_metrics"]["ai_adoption_rate"] == {"value": 0.5, "count": 1, "denominator": 2}
-    assert body["headline_metrics"]["estimated_weekly_hours_saved"] == 8
-    assert body["headline_metrics"]["avg_weekly_hours_saved"] == {"value": 8, "denominator": 1}
+    assert "estimated_weekly_hours_saved" not in body["headline_metrics"]
+    assert "avg_weekly_hours_saved" not in body["headline_metrics"]
     assert body["q3_q5_analysis"]["criteria"] == {
         "weekly_time_saved": "more_than_5_hours",
         "work_output_change": "slightly_more",
@@ -142,6 +142,7 @@ def test_get_metrics_returns_org_metrics_with_default_criteria(metrics_api_clien
     assert body["q3_q5_analysis"]["matching_count"] == 1
     assert body["q3_q5_analysis"]["analysis_denominator"] == 1
     assert body["group_breakdown"]["group_by"] == "level"
+    assert all("avg_hours_saved" not in row and "avg_hours_saved_denominator" not in row for row in body["group_breakdown"]["rows"])
 
 
 def test_get_metrics_supports_manager_scope(metrics_api_client):

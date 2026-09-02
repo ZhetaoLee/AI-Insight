@@ -11,6 +11,12 @@ EXPECTED_LEVEL_COUNTS = {
     "manager": 3,
     "ic": 4,
 }
+EXPECTED_MANAGER_LEVEL_BY_LEVEL = {
+    "senior_director": None,
+    "director": "senior_director",
+    "manager": "director",
+    "ic": "manager",
+}
 
 
 def test_cors_origins_accepts_comma_separated_env(monkeypatch):
@@ -32,6 +38,20 @@ def test_seed_employees_have_required_plan_one_shape():
     assert all("department" not in employee for employee in SEED_EMPLOYEES)
     assert all(employee["id"] != employee["manager_id"] for employee in SEED_EMPLOYEES)
     assert level_counts == EXPECTED_LEVEL_COUNTS
+
+
+def test_seed_employee_manager_chain_uses_adjacent_levels():
+    employees_by_id = {employee["id"]: employee for employee in SEED_EMPLOYEES}
+
+    for employee_doc in SEED_EMPLOYEES:
+        expected_manager_level = EXPECTED_MANAGER_LEVEL_BY_LEVEL[employee_doc["level"]]
+        if expected_manager_level is None:
+            assert employee_doc["manager_id"] is None
+            continue
+
+        manager_id = employee_doc["manager_id"]
+        assert manager_id is not None
+        assert employees_by_id[manager_id]["level"] == expected_manager_level
 
 
 def test_foundation_routes_are_registered():

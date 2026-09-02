@@ -12,7 +12,7 @@ export function AdoptionChart({ groupBreakdown }: AdoptionChartProps) {
   const hovered = hoverIdx !== null ? rows[hoverIdx] : null;
 
   const chartHint = hovered
-    ? `${hovered.label} · ${hovered.respondents} / ${hovered.eligible_employees} responses · adoption ${hovered.adoption_rate ?? 0}% · ${hovered.avg_hours_saved != null ? hovered.avg_hours_saved.toFixed(1) + " h" : "—"} avg saved`
+    ? `${hovered.label} · ${hovered.respondents} / ${hovered.eligible_employees} responses · adoption ${hovered.adoption_rate ?? 0}%`
     : "Hover a column for the full breakdown";
 
   return (

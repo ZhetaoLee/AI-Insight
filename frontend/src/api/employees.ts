@@ -13,7 +13,7 @@ export const SEED_EMPLOYEES: Employee[] = [
   { id: "emp_106", name: "Elena Ruiz", level: "director", manager_id: "emp_101" },
   { id: "emp_107", name: "Noah Patel", level: "manager", manager_id: "emp_106" },
   { id: "emp_108", name: "Jade Thompson", level: "ic", manager_id: "emp_107" },
-  { id: "emp_109", name: "Omar Farouk", level: "manager", manager_id: "emp_101" },
+  { id: "emp_109", name: "Omar Farouk", level: "manager", manager_id: "emp_106" },
   { id: "emp_110", name: "Grace Liu", level: "ic", manager_id: "emp_109" },
 ];
 

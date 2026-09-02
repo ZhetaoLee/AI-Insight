@@ -35,8 +35,6 @@ export interface RateMetric {
 
 export interface HeadlineMetrics {
   ai_adoption_rate: RateMetric;
-  avg_weekly_hours_saved: { value: number; denominator: number };
-  estimated_weekly_hours_saved: number;
   reports_more_output: RateMetric;
 }
 
@@ -100,8 +98,6 @@ export interface GroupRow {
   respondents: number;
   adoption_rate: number | null;
   more_output_rate: number | null;
-  avg_hours_saved: number | null;
-  avg_hours_saved_denominator: number;
   frequent_rework_rate: number | null;
   top_barrier: { code: string; label: string } | null;
 }

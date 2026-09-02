@@ -443,46 +443,23 @@ Shows how many respondents use AI at least occasionally.
 
 ---
 
-# 11. Estimated Weekly Time Saved
+# 11. Weekly Time Saved Distribution
 
-Q3 response bands are mapped to approximate midpoint values.
+Q3 response bands are shown as selected, without converting the bands into
+approximate hour values.
 
-Example mapping:
-
-```text
-No noticeable time saved → 0
-Less than 1 hour         → 0.5
-1-5 hours                → 3
-More than 5 hours        → 8
-Not sure                 → excluded
-```
-
-Two metrics are produced:
-
-### Average Weekly Time Saved
+Example distribution:
 
 ```text
-Total Estimated Hours Saved
----------------------------
-Employees with Known Values
+No noticeable time saved  10%
+Less than 1 hour          20%
+1-5 hours                 45%
+More than 5 hours         15%
+Not sure                  10%
 ```
 
-### Estimated Organizational Capacity Created
-
-```text
-Sum of Estimated Hours Saved
-```
-
-Example:
-
-```text
-Average: 4.2 hours / employee / week
-
-Estimated capacity created:
-180 hours / week
-```
-
-The UI should label these numbers as estimates derived from survey bands.
+The dashboard must not calculate average weekly hours saved or estimated
+organizational capacity from Q3 midpoint assumptions.
 
 ---
 
@@ -562,10 +539,10 @@ Active AI Users
 ```
 
 These cards should display plain counts for the selected dashboard scope. Each
-card should include a hover-triggered help icon explaining the count. Rate and
-average metrics such as response rate, AI adoption rate, and average weekly time
-saved remain available in the dashboard's coverage, chart, analysis, and records
-sections rather than as cluttered top-row cards.
+card should include a hover-triggered help icon explaining the count. Rates such
+as response rate and AI adoption rate remain available in the dashboard's
+coverage, chart, analysis, and records sections rather than as cluttered top-row
+cards.
 
 ---
 
@@ -606,7 +583,8 @@ Display Q2 as a horizontal stacked bar chart with rank 1, rank 2, and rank 3 seg
 
 ## 13.5 Weekly Time Saved
 
-Display Q3 as a bar chart with percentages. Also display average estimated weekly time saved using the midpoint mapping in `docs/metrics.md`.
+Display Q3 as a bar chart with percentages. Do not display an average estimated
+weekly time-saved metric.
 
 ---
 
@@ -819,14 +797,12 @@ Coverage metrics
 Survey-answer distributions
 → respondents who answered that question
 
-Average weekly time saved
-→ respondents whose Q3 is not "Not sure"
-
 Dynamic Q3-Q5 analysis
 → respondents with valid answers for the selected criteria
 ```
 
-Do not treat `Not sure` as zero. Exclude it from calculations that require a numeric band, and return the valid denominator.
+Do not treat `Not sure` as zero. Exclude it from the Dynamic Q3-Q5 analysis
+denominator and return the valid denominator.
 
 ## 20.3 Question-Level Aggregations
 
@@ -1069,11 +1045,6 @@ Example:
       "count": 5,
       "denominator": 6
     },
-    "avg_weekly_hours_saved": {
-      "value": 4.7,
-      "denominator": 6
-    },
-    "estimated_weekly_hours_saved": 28.2,
     "reports_more_output": {
       "value": 0.67,
       "count": 4,
@@ -1147,8 +1118,6 @@ Example:
         "respondents": 3,
         "adoption_rate": 67,
         "more_output_rate": 67,
-        "avg_hours_saved": 4.5,
-        "avg_hours_saved_denominator": 2,
         "frequent_rework_rate": 33,
         "top_barrier": { "code": "lack_of_training", "label": "Lack of training" }
       }
@@ -1161,7 +1130,6 @@ Numeric unit conventions:
 
 - `RateMetric.value` fields are fractions from `0` to `1`.
 - `DistributionRow.pct` and `group_breakdown` rate fields are whole percentages from `0` to `100`.
-- Hour fields are raw estimated hours.
 - Counts and denominators are integers.
 
 The response shape must remain compatible with `frontend/src/types/metrics.ts`. The frontend should not duplicate business metric calculations.
@@ -1340,7 +1308,7 @@ The product is complete when:
 
 11. AI Adoption Rate is calculated from Q1.
 
-12. Weekly time saved uses the Q3 midpoint mapping in `docs/metrics.md`.
+12. Weekly time saved is displayed as the Q3 percentage distribution without midpoint-derived hour estimates.
 
 13. Q4 work output, Q5 work quality, and Q6 AI rework are displayed as percentage distributions.
 

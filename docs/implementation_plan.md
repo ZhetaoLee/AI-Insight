@@ -17,7 +17,7 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - Pytest, pytest-asyncio, and httpx test client support are configured.
 - Deterministic employee and response fixtures exist.
 - Tests cover exactly 10 seeded mock employees across Senior Director, Director, Manager, and Individual Contributor levels.
-- Tests cover hierarchy traversal, manager subtree resolution, level filtering, hierarchy cycle protection, and active survey-cycle filtering.
+- Tests cover hierarchy traversal, manager subtree resolution, level filtering, adjacent seeded-management levels, hierarchy cycle protection, and active survey-cycle filtering.
 
 ## Plan 3: Survey Submission API [Complete]
 
@@ -34,7 +34,7 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - Every formula from `docs/metrics.md` is implemented with exact unit tests.
 - Population counts, response rate, active AI users, and adoption rate are calculated.
 - Q2 rank counts and required sort order are calculated.
-- Q3 midpoint mapping is applied and `not_sure` is excluded from numeric metrics.
+- Q3 weekly time saved is reported as a percentage distribution; `not_sure` is excluded from Dynamic Q3-Q5 analysis.
 - Q4, Q5, Q6, Q7, and Q8 distributions use the correct denominators.
 - Dynamic Q3-Q5 matching count, denominator, and rate are implemented.
 - Tests assert metric unit conventions: top-level `RateMetric.value` fields are fractions, while distribution and group breakdown percentages are whole percentages.

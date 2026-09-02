@@ -20,14 +20,13 @@ def test_aggregate_population_headlines_and_unit_conventions(metric_employees, m
     assert metrics.headline_metrics.ai_adoption_rate.value == 0.75
     assert metrics.headline_metrics.ai_adoption_rate.count == 3
     assert metrics.headline_metrics.ai_adoption_rate.denominator == 4
-    assert metrics.headline_metrics.avg_weekly_hours_saved.value == pytest.approx(16 / 3)
-    assert metrics.headline_metrics.avg_weekly_hours_saved.denominator == 3
-    assert metrics.headline_metrics.estimated_weekly_hours_saved == 16
     assert metrics.headline_metrics.reports_more_output.value == 0.5
     assert metrics.headline_metrics.reports_more_output.count == 2
     assert metrics.headline_metrics.reports_more_output.denominator == 4
     assert 0 <= metrics.headline_metrics.ai_adoption_rate.value <= 1
     assert metrics.usage_frequency.rows_by_code["daily"].pct == 50
+    assert "avg_weekly_hours_saved" not in metrics.headline_metrics.model_dump()
+    assert "estimated_weekly_hours_saved" not in metrics.headline_metrics.model_dump()
 
 
 def test_aggregate_question_distributions(metric_employees, metric_responses):
@@ -103,7 +102,7 @@ def test_aggregate_dynamic_q3_q5_analysis_excludes_not_sure(metric_employees, me
     assert metrics.q3_q5_analysis.matching_rate == pytest.approx(1 / 3)
 
 
-def test_q3_midpoint_mapping_covers_every_known_band(metric_employees):
+def test_weekly_time_saved_keeps_bucket_distribution_without_hour_estimates(metric_employees):
     responses = [
         response(
             "resp_201",
@@ -157,9 +156,13 @@ def test_q3_midpoint_mapping_covers_every_known_band(metric_employees):
 
     metrics = aggregate(metric_employees, responses)
 
-    assert metrics.headline_metrics.estimated_weekly_hours_saved == 11.5
-    assert metrics.headline_metrics.avg_weekly_hours_saved.value == pytest.approx(11.5 / 4)
-    assert metrics.headline_metrics.avg_weekly_hours_saved.denominator == 4
+    assert metrics.weekly_time_saved.denominator == 4
+    assert metrics.weekly_time_saved.rows_by_code["no_noticeable_time_saved"].pct == 25
+    assert metrics.weekly_time_saved.rows_by_code["less_than_1_hour"].pct == 25
+    assert metrics.weekly_time_saved.rows_by_code["1_5_hours"].pct == 25
+    assert metrics.weekly_time_saved.rows_by_code["more_than_5_hours"].pct == 25
+    assert "avg_weekly_hours_saved" not in metrics.headline_metrics.model_dump()
+    assert "estimated_weekly_hours_saved" not in metrics.headline_metrics.model_dump()
 
 
 def test_aggregate_benefits_and_barriers(metric_employees, metric_responses):
@@ -185,8 +188,6 @@ def test_aggregate_group_breakdown_recomputes_group_metrics(metric_employees, me
     assert rows["manager"].respondents == 1
     assert rows["manager"].adoption_rate == 100
     assert rows["manager"].more_output_rate == 100
-    assert rows["manager"].avg_hours_saved == 8
-    assert rows["manager"].avg_hours_saved_denominator == 1
     assert rows["manager"].frequent_rework_rate == 0
     assert rows["manager"].top_barrier is not None
     assert rows["manager"].top_barrier.model_dump() == {"code": "lack_of_training", "label": "Lack of training"}
@@ -194,11 +195,10 @@ def test_aggregate_group_breakdown_recomputes_group_metrics(metric_employees, me
     assert rows["ic"].respondents == 3
     assert rows["ic"].adoption_rate == 67
     assert rows["ic"].more_output_rate == 33
-    assert rows["ic"].avg_hours_saved == 4
-    assert rows["ic"].avg_hours_saved_denominator == 2
     assert rows["ic"].frequent_rework_rate == 67
     assert rows["ic"].top_barrier is not None
     assert rows["ic"].top_barrier.model_dump() == {"code": "lack_of_training", "label": "Lack of training"}
+    assert all("avg_hours_saved" not in row.model_dump() and "avg_hours_saved_denominator" not in row.model_dump() for row in rows.values())
 
 
 def test_group_breakdown_group_without_respondents_returns_null_rates(metric_employees, metric_responses):
@@ -214,10 +214,10 @@ def test_group_breakdown_group_without_respondents_returns_null_rates(metric_emp
     assert rows["director"].respondents == 0
     assert rows["director"].adoption_rate is None
     assert rows["director"].more_output_rate is None
-    assert rows["director"].avg_hours_saved is None
-    assert rows["director"].avg_hours_saved_denominator == 0
     assert rows["director"].frequent_rework_rate is None
     assert rows["director"].top_barrier is None
+    assert "avg_hours_saved" not in rows["director"].model_dump()
+    assert "avg_hours_saved_denominator" not in rows["director"].model_dump()
 
 
 def test_aggregate_level_group_breakdown_uses_level_labels(metric_employees, metric_responses):
@@ -238,7 +238,6 @@ def test_aggregate_empty_scope_returns_zero_and_null_metrics():
 
     assert metrics.coverage.response_rate == 0
     assert metrics.headline_metrics.ai_adoption_rate.value == 0
-    assert metrics.headline_metrics.avg_weekly_hours_saved.value == 0
     assert metrics.headline_metrics.reports_more_output.value == 0
     assert metrics.usage_frequency.denominator == 0
     assert metrics.group_breakdown.rows == []
@@ -262,7 +261,6 @@ def test_aggregate_ignores_responses_outside_resolved_employee_scope(metric_empl
 
     assert metrics.coverage.respondents == 4
     assert metrics.population.active_ai_users == 3
-    assert metrics.headline_metrics.estimated_weekly_hours_saved == 16
     assert metrics.usage_frequency.rows_by_code["multiple_times_day"].count == 0
 
 

@@ -257,6 +257,27 @@ test("employee data and selectors omit unsupported department context", async ()
   assert.equal(dashboardToolbarSource.includes(".department"), false);
 });
 
+test("frontend employee fallback uses adjacent management levels", () => {
+  const expectedManagerLevelByLevel = {
+    senior_director: null,
+    director: "senior_director",
+    manager: "director",
+    ic: "manager",
+  };
+  const employeesById = new Map(SEED_EMPLOYEES.map((employee) => [employee.id, employee]));
+
+  for (const employee of SEED_EMPLOYEES) {
+    const expectedManagerLevel = expectedManagerLevelByLevel[employee.level];
+    if (expectedManagerLevel === null) {
+      assert.equal(employee.manager_id, null);
+      continue;
+    }
+
+    assert.notEqual(employee.manager_id, null);
+    assert.equal(employeesById.get(employee.manager_id)?.level, expectedManagerLevel);
+  }
+});
+
 test("dashboard does not render an unsupported small-sample warning", async () => {
   const [dashboardPageSource, dashboardStyles] = await Promise.all([
     readFile(new URL("../src/pages/DashboardPage.tsx", import.meta.url), "utf8"),
@@ -391,6 +412,26 @@ test("distribution panels use clear titles help tooltips and fact-based footers"
   assert.equal(panelsSource.includes("most common answer"), true);
   assert.equal(panelsSource.includes("report frequent rework"), true);
   assert.equal(panelsSource.includes("most cited barrier"), true);
+});
+
+test("dashboard removes midpoint-derived weekly hours estimates", async () => {
+  const [metricsTypesSource, adoptionChartSource, adoptionSidePanelSource, recordsTableSource, distributionPanelsSource] = await Promise.all([
+    readFile(new URL("../src/types/metrics.ts", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/dashboard/AdoptionChart.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/dashboard/AdoptionSidePanel.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/dashboard/RecordsTable.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/dashboard/DistributionPanels.tsx", import.meta.url), "utf8"),
+  ]);
+
+  for (const source of [metricsTypesSource, adoptionChartSource, adoptionSidePanelSource, recordsTableSource, distributionPanelsSource]) {
+    assert.equal(source.includes("avg_weekly_hours_saved"), false);
+    assert.equal(source.includes("estimated_weekly_hours_saved"), false);
+    assert.equal(source.includes("avg_hours_saved"), false);
+    assert.equal(source.includes("avg saved"), false);
+  }
+
+  assert.equal(recordsTableSource.includes("Avg hrs saved"), false);
+  assert.equal(distributionPanelsSource.includes("Midpoints"), false);
 });
 
 test("employee directory fallback is used only when the backend is unreachable", async () => {

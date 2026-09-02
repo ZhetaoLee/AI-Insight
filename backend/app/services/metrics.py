@@ -2,7 +2,6 @@ from collections.abc import Callable, Sequence
 
 from app.models.employee import Employee
 from app.models.metrics import (
-    AverageMetric,
     Coverage,
     DashboardMetricsResponse,
     DistributionRow,
@@ -102,12 +101,6 @@ BARRIERS: tuple[Option, ...] = (
     (NO_MAJOR_BARRIERS, "No major barriers"),
     (OTHER, "Other"),
 )
-HOURS_BY_Q3 = {
-    "no_noticeable_time_saved": 0.0,
-    "less_than_1_hour": 0.5,
-    "1_5_hours": 3.0,
-    "more_than_5_hours": 8.0,
-}
 MORE_OUTPUT_CODES = {"slightly_more", "significantly_more"}
 FREQUENT_REWORK_CODES = {"often", "almost_always"}
 LEVEL_ORDER = ("senior_director", "director", "manager", "ic")
@@ -124,9 +117,7 @@ class MetricsAggregator:
     ) -> DashboardMetricsResponse:
         respondents = self._respondents(employees, responses)
         active = [response for _, response in respondents if response.answers.ai_usage_frequency != "never"]
-        hours = known_hours(respondents)
         more_output = [response for _, response in respondents if response.answers.work_output_change in MORE_OUTPUT_CODES]
-        total_hours = sum(hours)
 
         return DashboardMetricsResponse(
             scope=scope,
@@ -143,8 +134,6 @@ class MetricsAggregator:
             ),
             headline_metrics=HeadlineMetrics(
                 ai_adoption_rate=RateMetric(value=fraction(len(active), len(respondents)), count=len(active), denominator=len(respondents)),
-                avg_weekly_hours_saved=AverageMetric(value=average(hours), denominator=len(hours)),
-                estimated_weekly_hours_saved=total_hours,
                 reports_more_output=RateMetric(value=fraction(len(more_output), len(respondents)), count=len(more_output), denominator=len(respondents)),
             ),
             usage_frequency=self._option_distribution(
@@ -262,7 +251,7 @@ class MetricsAggregator:
         respondents: Sequence[Respondent],
         criteria: Q3Q5Criteria,
     ) -> Q3Q5Analysis:
-        valid = [response for _, response in respondents if estimated_hours(response) is not None]
+        valid = [response for _, response in respondents if response.answers.weekly_time_saved != "not_sure"]
         matching = [
             response
             for response in valid
@@ -291,7 +280,6 @@ class MetricsAggregator:
             respondents = self._respondents(members, responses)
             active = [response for _, response in respondents if response.answers.ai_usage_frequency != "never"]
             more_output = [response for _, response in respondents if response.answers.work_output_change in MORE_OUTPUT_CODES]
-            hours = known_hours(respondents)
             frequent_rework = [response for _, response in respondents if response.answers.correction_frequency in FREQUENT_REWORK_CODES]
 
             rows.append(
@@ -302,8 +290,6 @@ class MetricsAggregator:
                     respondents=len(respondents),
                     adoption_rate=pct_or_none(len(active), len(respondents)),
                     more_output_rate=pct_or_none(len(more_output), len(respondents)),
-                    avg_hours_saved=average_or_none(hours),
-                    avg_hours_saved_denominator=len(hours),
                     frequent_rework_rate=pct_or_none(len(frequent_rework), len(respondents)),
                     top_barrier=self._top_barrier(respondents),
                 )
@@ -339,14 +325,6 @@ def fraction(numerator: int, denominator: int) -> float:
     return numerator / denominator if denominator else 0
 
 
-def average(values: Sequence[float]) -> float:
-    return sum(values) / len(values) if values else 0
-
-
-def average_or_none(values: Sequence[float]) -> float | None:
-    return average(values) if values else None
-
-
 def label_for(options: Sequence[Option], code: str) -> str:
     return next((label for option_code, label in options if option_code == code), code)
 
@@ -355,11 +333,3 @@ def add_other_text(bucket: dict[str, int], code: str, text: str | None) -> None:
     if code != OTHER or not text:
         return
     bucket[text] = bucket.get(text, 0) + 1
-
-
-def estimated_hours(response: SurveyResponse) -> float | None:
-    return HOURS_BY_Q3.get(response.answers.weekly_time_saved)
-
-
-def known_hours(respondents: Sequence[Respondent]) -> list[float]:
-    return [hours for _, response in respondents if (hours := estimated_hours(response)) is not None]

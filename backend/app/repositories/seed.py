@@ -28,7 +28,7 @@ SEED_EMPLOYEES = [
     employee("emp_106", "Elena Ruiz", "director", "emp_101"),
     employee("emp_107", "Noah Patel", "manager", "emp_106"),
     employee("emp_108", "Jade Thompson", "ic", "emp_107"),
-    employee("emp_109", "Omar Farouk", "manager", "emp_101"),
+    employee("emp_109", "Omar Farouk", "manager", "emp_106"),
     employee("emp_110", "Grace Liu", "ic", "emp_109"),
 ]
 

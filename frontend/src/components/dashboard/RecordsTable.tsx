@@ -7,14 +7,13 @@ interface RecordsTableProps {
   eligibleTotal: number;
 }
 
-type SortKey = "name" | "respondents" | "adoption_rate" | "more_output_rate" | "avg_hours_saved" | "frequent_rework_rate";
+type SortKey = "name" | "respondents" | "adoption_rate" | "more_output_rate" | "frequent_rework_rate";
 
 const COLUMNS: { key: SortKey | "top_barrier"; label: string; align: "left" | "right"; sortable: boolean }[] = [
   { key: "name", label: "Group", align: "left", sortable: true },
   { key: "respondents", label: "Responses", align: "right", sortable: true },
   { key: "adoption_rate", label: "AI adoption rate", align: "right", sortable: true },
   { key: "more_output_rate", label: "Reports more output", align: "right", sortable: true },
-  { key: "avg_hours_saved", label: "Avg hrs saved", align: "right", sortable: true },
   { key: "frequent_rework_rate", label: "Frequent rework", align: "right", sortable: true },
   { key: "top_barrier", label: "Top barrier", align: "left", sortable: false },
 ];
@@ -28,7 +27,6 @@ export function RecordsTable({ groupBreakdown, eligibleTotal }: RecordsTableProp
     if (key === "respondents") return row.respondents;
     if (key === "adoption_rate") return row.adoption_rate ?? -1;
     if (key === "more_output_rate") return row.more_output_rate ?? -1;
-    if (key === "avg_hours_saved") return row.avg_hours_saved ?? -1;
     return row.frequent_rework_rate ?? -1;
   }
 
@@ -97,7 +95,6 @@ export function RecordsTable({ groupBreakdown, eligibleTotal }: RecordsTableProp
                       <div className="cell-bar-value">{r.more_output_rate != null ? `${r.more_output_rate}%` : "—"}</div>
                     </div>
                   </td>
-                  <td className="cell-numeric">{r.avg_hours_saved != null ? `${r.avg_hours_saved.toFixed(1)} h` : "—"}</td>
                   <td style={{ textAlign: "right" }}>
                     <span
                       className="rework-pill"
@@ -115,7 +112,7 @@ export function RecordsTable({ groupBreakdown, eligibleTotal }: RecordsTableProp
       </div>
       <div className="table-footer">
         <div>Seeded demonstration data · {eligibleTotal} eligible employees · fielded Q3 2026</div>
-        <div>"Not sure" excluded from numeric metrics · denominators shown per metric</div>
+        <div>"Not sure" excluded from Q3-Q5 analysis · denominators shown per metric</div>
       </div>
     </div>
   );

@@ -40,6 +40,12 @@ test("employee survey submission is reflected in the executive dashboard", async
   const managerMetrics = await managerMetricsResponse.json();
   expect(managerMetrics.coverage.respondents).toBeGreaterThanOrEqual(1);
   expect(managerMetrics.population.active_ai_users).toBeGreaterThanOrEqual(1);
+  expect(managerMetrics.headline_metrics.avg_weekly_hours_saved).toBeUndefined();
+  expect(managerMetrics.headline_metrics.estimated_weekly_hours_saved).toBeUndefined();
+  for (const row of managerMetrics.group_breakdown.rows) {
+    expect(row.avg_hours_saved).toBeUndefined();
+    expect(row.avg_hours_saved_denominator).toBeUndefined();
+  }
 
   await page.getByRole("link", { name: "Dashboard" }).click();
 
@@ -53,6 +59,8 @@ test("employee survey submission is reflected in the executive dashboard", async
   await expect(page.getByText("Respondents", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("Active AI Users", { exact: true })).toBeVisible();
   await expect(page.getByText("Response coverage", { exact: true })).toBeVisible();
+  await expect(page.getByText("Avg hrs saved", { exact: true })).toHaveCount(0);
+  await expect(page.getByText(/avg saved/i)).toHaveCount(0);
   await expect(page.locator(".hero-card")).toHaveCount(3);
   await expect(page.locator(".hero-card .info-help")).toHaveCount(3);
   const adoptionChart = page.locator(".chart-card").filter({ hasText: "Adoption by level" });

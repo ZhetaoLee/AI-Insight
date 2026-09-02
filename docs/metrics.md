@@ -30,7 +30,6 @@ Return counts and denominators with rates.
 - `RateMetric.value` fields are fractions from `0` to `1`.
 - Distribution `pct` fields are whole percentages from `0` to `100`.
 - `group_breakdown` rate fields are whole percentages from `0` to `100`.
-- Hour fields are raw estimated hours.
 - Counts and denominators are integers.
 
 ## Q1. AI Usage Frequency
@@ -80,29 +79,8 @@ Display the option distribution as a bar chart with percentages.
 option_percentage = option_count / respondents_who_answered_Q3
 ```
 
-Estimated hours mapping:
-
-```text
-no_noticeable_time_saved = 0
-less_than_1_hour = 0.5
-1_5_hours = 3
-more_than_5_hours = 8
-not_sure = excluded
-```
-
-Average estimated weekly time saved:
-
-```text
-avg_weekly_hours_saved = sum(estimated_hours) / respondents_with_known_Q3_values
-```
-
-Total estimated weekly time saved:
-
-```text
-estimated_weekly_hours_saved = sum(estimated_hours)
-```
-
-`not_sure` is missing data, not zero.
+Do not convert Q3 bands into midpoint hour estimates. The dashboard should show
+the distribution of selected bands only.
 
 ## Q4. Work Output Impact
 
@@ -227,12 +205,10 @@ Required group row fields:
 - `respondents`: number of employees in the group with submitted responses.
 - `adoption_rate`: `active_ai_users / respondents`, returned as a whole percentage.
 - `more_output_rate`: `reports_more_output / respondents_who_answered_Q4`, returned as a whole percentage.
-- `avg_hours_saved`: average estimated weekly hours saved for known Q3 values.
-- `avg_hours_saved_denominator`: respondents with known Q3 values.
 - `frequent_rework_rate`: `frequent_rework / respondents_who_answered_Q6`, returned as a whole percentage.
 - `top_barrier`: highest-count Q8 barrier for the group, or `null` when unavailable.
 
 ## Missing Data Rule
 
-`not_sure` is missing data, not zero. Exclude it from metrics requiring numeric
-values and return the denominator used for each metric.
+`not_sure` is missing data, not zero. Exclude it from the Dynamic Q3-Q5 analysis
+denominator and return the denominator used for each metric.
