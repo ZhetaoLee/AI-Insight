@@ -201,6 +201,11 @@ Level and manager are retrieved from the employee record and are not editable.
 
 This prevents inconsistent organizational data from being submitted through the survey.
 
+After a successful submission, the page should clear the selected employee and all
+answer fields before another employee can be selected. The confirmation banner may
+remain visible, but no subsequent respondent should inherit the prior respondent's
+answers.
+
 ---
 
 # 8. Survey Questions
@@ -975,7 +980,7 @@ Example response item:
 GET /api/survey-responses/submitted-employee-ids
 ```
 
-Returns employee IDs that already submitted for the active survey cycle. The survey page uses this response to hide those employees from the name picker, removes the current submitter immediately after a successful submission, refreshes the list periodically while the page is open, refreshes it when the page becomes active again, refreshes it before a new employee selection, and refreshes it when starting another response after a submission.
+Returns employee IDs that already submitted for the active survey cycle. The survey page uses this response to hide those employees from the name picker, removes the current submitter immediately after a successful submission, clears the submitted form's answer state before another employee can be selected, refreshes the list periodically while the page is open, refreshes it when the page becomes active again, refreshes it before a new employee selection, and refreshes it when starting another response after a submission.
 
 Example response:
 

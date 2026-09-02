@@ -10,6 +10,9 @@ for the active survey cycle. Once an employee submits, their name is hidden from
 new survey submissions for that cycle. The submitted-employee list is refreshed
 periodically while the page is open, when the page becomes active again, before
 another employee selection, and when starting another response.
+After a successful submission, the form clears the selected employee and all
+answer fields so the next respondent cannot inherit the prior respondent's
+answers.
 
 ### Level [Read-only]
 

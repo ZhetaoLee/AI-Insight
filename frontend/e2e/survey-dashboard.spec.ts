@@ -63,6 +63,17 @@ test("employee survey submission is reflected in the executive dashboard", async
 
   await expect(page.getByText("Your response is recorded")).toBeVisible();
   await expect(page.locator("#employee-picker option", { hasText: "Alice Chen" })).toHaveCount(0);
+  await expect(page.getByLabel("Your name")).toHaveValue("");
+  await expect(page.getByRole("button", { name: "Daily" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "Implementation" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "Research" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "Testing" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "More than 5 hours" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "Significantly more" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "Slightly better" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "Sometimes" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "Saves time" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "Lack of training" })).toHaveAttribute("aria-pressed", "false");
 
   const resetRefreshSubmission = await request.post("/api/survey-responses", { data: surveySubmission("emp_108") });
   expect(resetRefreshSubmission.status()).toBe(201);

@@ -114,8 +114,7 @@ export function SurveyPage() {
     setSubmitError(null);
   }
 
-  function resetForm() {
-    setEmployeeId(null);
+  function clearAnswerState() {
     setAiUsageFrequency(null);
     setTopValueAreaCodes([]);
     setTopValueAreaOtherText("");
@@ -127,6 +126,11 @@ export function SurveyPage() {
     setBiggestBenefitOtherText("");
     setBarrierCodes([]);
     setBarriersOtherText("");
+  }
+
+  function resetForm() {
+    setEmployeeId(null);
+    clearAnswerState();
     setErrors({});
     setSubmitted(false);
     setSubmitError(null);
@@ -168,6 +172,8 @@ export function SurveyPage() {
       await submitSurveyResponse(buildSurveyResponseSubmission(formState));
       setSubmittedEmployeeIds((prev) => new Set(prev).add(submittedEmployeeId));
       setEmployeeId(null);
+      clearAnswerState();
+      setErrors({});
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
