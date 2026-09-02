@@ -29,15 +29,15 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - One active response is upserted per `(employee_id, survey_cycle)`.
 - Tests verify clients send only `employee_id` and `answers`; the server populates response IDs, survey cycle, survey version, and submission timestamp.
 
-## Plan 4: Metrics Engine
+## Plan 4: Metrics Engine [Complete]
 
-- Implement every formula from `docs/metrics.md` with exact unit tests.
-- Calculate population counts, response rate, active AI users, and adoption rate.
-- Calculate Q2 rank counts and required sort order.
-- Apply Q3 midpoint mapping and exclude `not_sure` from numeric metrics.
-- Calculate Q4, Q5, Q6, Q7, and Q8 distributions with correct denominators.
-- Implement dynamic Q3-Q5 matching count, denominator, and rate.
-- Assert metric unit conventions: top-level `RateMetric.value` fields are fractions, while distribution and group breakdown percentages are whole percentages.
+- Every formula from `docs/metrics.md` is implemented with exact unit tests.
+- Population counts, response rate, active AI users, and adoption rate are calculated.
+- Q2 rank counts and required sort order are calculated.
+- Q3 midpoint mapping is applied and `not_sure` is excluded from numeric metrics.
+- Q4, Q5, Q6, Q7, and Q8 distributions use the correct denominators.
+- Dynamic Q3-Q5 matching count, denominator, and rate are implemented.
+- Tests assert metric unit conventions: top-level `RateMetric.value` fields are fractions, while distribution and group breakdown percentages are whole percentages.
 
 ## Plan 5: Dashboard Metrics API
 
