@@ -1,5 +1,5 @@
 import { LEVEL_LABELS, type Employee, type EmployeeLevel } from "../../types/employee";
-import { subtreeOf } from "../../lib/metricsEngine";
+import { subtreeOf } from "../../lib/dashboardScope";
 
 const LEVEL_ORDER: EmployeeLevel[] = ["senior_director", "director", "manager", "ic"];
 

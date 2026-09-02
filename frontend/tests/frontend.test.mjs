@@ -176,7 +176,7 @@ test("dashboard metrics omits scope_id for org requests", async () => {
   assert.equal(params.has("scope_id"), false);
 });
 
-test("dashboard metrics does not use local fallback for backend validation errors", async () => {
+test("dashboard metrics does not use local fallback for backend errors", async () => {
   await withMockFetch(
     async () => new Response("invalid scope", { status: 422 }),
     () =>
@@ -191,6 +191,25 @@ test("dashboard metrics does not use local fallback for backend validation error
             }
           ),
         /GET \/api\/metrics failed: 422/
+      )
+  );
+
+  await withMockFetch(
+    async () => {
+      throw new TypeError("network unavailable");
+    },
+    () =>
+      assert.rejects(
+        () =>
+          fetchDashboardMetrics(
+            { type: "org" },
+            {
+              weekly_time_saved: "more_than_5_hours",
+              work_output_change: "slightly_more",
+              quality_change: "slightly_better",
+            }
+          ),
+        /network unavailable/
       )
   );
 });
@@ -226,34 +245,13 @@ test("dashboard org directory fallback is used only when the backend is unreacha
     },
     async () => {
       const employees = await fetchOrgDirectory();
-      assert.ok(employees.length > 10);
+      assert.equal(employees.length, 10);
     }
   );
 
   await withMockFetch(
     async () => new Response("server error", { status: 500 }),
     () => assert.rejects(() => fetchOrgDirectory(), /GET \/api\/employees failed: 500/)
-  );
-});
-
-test("dashboard metrics fallback returns level group breakdown", async () => {
-  await withMockFetch(
-    async () => {
-      throw new TypeError("network unavailable");
-    },
-    async () => {
-      const metrics = await fetchDashboardMetrics(
-        { type: "org" },
-        {
-          weekly_time_saved: "more_than_5_hours",
-          work_output_change: "slightly_more",
-          quality_change: "slightly_better",
-        }
-      );
-
-      assert.equal(metrics.group_breakdown.group_by, "level");
-      assert.ok(metrics.group_breakdown.rows.some((row) => row.key === "ic"));
-    }
   );
 });
 

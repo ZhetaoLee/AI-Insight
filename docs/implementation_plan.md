@@ -54,7 +54,8 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - Fix Q8 UI behavior so `no_major_barriers` is mutually exclusive.
 - Add tests for required survey fields, Q2 ranking, `Other` text, and Q8 exclusivity.
 - Add tests that dashboard requests include `scope`, `scope_id`, `q3`, `q4`, and `q5`.
-- Keep local fallback behavior only as a demo aid until the backend is available.
+- Keep local employee and survey-submit fallback behavior as a demo aid when the backend is unavailable.
+- Dashboard metrics are fetched from the backend and are not recomputed in frontend code.
 
 ## Plan 7: End-to-End Validation [Complete]
 
@@ -65,9 +66,9 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - Manually validate survey submission, response replacement, dashboard refresh, org/manager/level scopes, and Q3-Q5 analysis.
 - Add one Playwright smoke test for the full submit-to-dashboard flow.
 
-## Plan 8: Final Review and Release
+## Plan 8: Final Review and Release [Complete]
 
-- Compare implementation against PRD acceptance criteria.
-- Confirm docs and README match the final commands and API behavior.
-- Run full validation before committing.
-- Push only intended tracked files to GitHub.
+- Implementation has been compared against PRD acceptance criteria.
+- Docs and README match the final commands and API behavior.
+- Full backend, frontend, build, and E2E validation passes locally.
+- Intended tracked files are ready to commit and push to GitHub.

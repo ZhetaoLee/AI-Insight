@@ -1,9 +1,7 @@
 import type { EmployeeLevel } from "./employee";
 
-// Shape follows PRD.md §24 (Dashboard API Response) plus the group-breakdown
-// extension the executive dashboard's charts/table need; the frontend never
-// recomputes these values itself once a real /api/metrics backend exists —
-// see api/metrics.ts and lib/metricsEngine.ts for the temporary fallback.
+// Shape follows PRD.md §24 (Dashboard API Response). The frontend renders these
+// values but does not recompute leadership metric business logic.
 
 export type DashboardScope =
   | { type: "org" }

@@ -4,7 +4,7 @@ import type { Employee } from "../types/employee";
 // ~10 seeded employees across multiple hierarchy branches, matching the
 // scale described in ADR.md and PRD.md §29.1. Used as a local fallback so
 // the survey page is fully demoable before the FastAPI backend exists.
-const SEED_EMPLOYEES: Employee[] = [
+export const SEED_EMPLOYEES: Employee[] = [
   { id: "emp_101", name: "Priya Nair", department: "Engineering", level: "senior_director", manager_id: null },
   { id: "emp_102", name: "Sarah Lee", department: "Engineering", level: "director", manager_id: "emp_101" },
   { id: "emp_103", name: "David Kim", department: "Engineering", level: "manager", manager_id: "emp_102" },
