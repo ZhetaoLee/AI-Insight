@@ -1017,11 +1017,11 @@ The server populates `id`, `survey_cycle`, `survey_version`, and `submitted_at`.
 Unified endpoint:
 
 ```http
-GET /api/metrics?scope=org&group_by=department&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
+GET /api/metrics?scope=org&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
 
-GET /api/metrics?scope=manager&scope_id=emp_201&group_by=level&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
+GET /api/metrics?scope=manager&scope_id=emp_201&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
 
-GET /api/metrics?scope=level&scope_id=ic&group_by=department&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
+GET /api/metrics?scope=level&scope_id=ic&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
 ```
 
 Query parameters:
@@ -1029,7 +1029,6 @@ Query parameters:
 ```text
 scope      required: org | manager | level
 scope_id   required for manager and level scopes; omitted for org
-group_by   optional, default department: department | level
 q3         optional, default more_than_5_hours; cannot be not_sure
 q4         optional, default slightly_more
 q5         optional, default slightly_better
@@ -1037,7 +1036,7 @@ q5         optional, default slightly_better
 
 The `q3=not_sure` criterion must return `422` because `not_sure` is missing data, not a numeric or analytical bucket.
 
-The backend must recompute all metrics from individual responses for the resolved scope. It should also return `group_breakdown` rows when `group_by` is provided so the dashboard can render comparison charts and tables without recomputing metric business logic.
+The backend must recompute all metrics from individual responses for the resolved scope. It should also return `group_breakdown` rows, grouped by `level`, so the dashboard can render comparison charts and tables without recomputing metric business logic. Department is display context on the Employee record only, not a supported grouping dimension for the initial version (see §7).
 
 ---
 
@@ -1141,11 +1140,11 @@ Example:
   },
 
   "group_breakdown": {
-    "group_by": "department",
+    "group_by": "level",
     "rows": [
       {
-        "key": "Engineering",
-        "label": "Engineering",
+        "key": "ic",
+        "label": "IC",
         "eligible_employees": 4,
         "respondents": 3,
         "adoption_rate": 67,
@@ -1234,7 +1233,7 @@ Open Dashboard
       ↓
 scope = Organization
       ↓
-GET /api/metrics?scope=org&group_by=department&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
+GET /api/metrics?scope=org&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
       ↓
 Display executive KPIs
       ↓

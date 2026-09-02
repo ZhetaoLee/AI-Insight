@@ -937,7 +937,6 @@ class MetricsService:
         self,
         scope_type: ScopeType,
         scope_id: str | None,
-        group_by: GroupByField,
         q3: str,
         q4: str,
         q5: str
@@ -961,7 +960,6 @@ class MetricsService:
             employee_ids,
             responses,
             signals,
-            group_by=group_by,
             q3_q5_criteria=(q3, q4, q5)
         )
 ```
@@ -1000,11 +998,11 @@ GET /api/employees
 
 POST /api/survey-responses
 
-GET /api/metrics?scope=org&group_by=department&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
+GET /api/metrics?scope=org&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
 
-GET /api/metrics?scope=manager&scope_id=emp_201&group_by=level&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
+GET /api/metrics?scope=manager&scope_id=emp_201&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
 
-GET /api/metrics?scope=level&scope_id=ic&group_by=department&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
+GET /api/metrics?scope=level&scope_id=ic&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
 ```
 
 The metrics endpoint contract is:
@@ -1012,17 +1010,16 @@ The metrics endpoint contract is:
 ```text
 scope      required: org | manager | level
 scope_id   required for manager and level scopes; omitted for org
-group_by   optional, default department: department | level
 q3         optional, default more_than_5_hours; cannot be not_sure
 q4         optional, default slightly_more
 q5         optional, default slightly_better
 ```
 
+`group_breakdown` is always grouped by `level`. Department lives on the Employee record as display context only — it is not a supported dashboard grouping dimension for the initial version.
+
 The API must return `422` for `q3=not_sure` because `not_sure` is missing data and is excluded from numeric and criteria-based analysis.
 
 The backend owns the dynamic Q3-Q5 analysis calculation. The frontend sends criteria and renders the returned `q3_q5_analysis`; it must not filter raw responses locally once the backend is available.
-
-The dashboard response should include `group_breakdown` when `group_by` is supplied. This is presentation-ready aggregate data for comparison charts and tables, not a separate metrics scope.
 
 ---
 
@@ -1193,7 +1190,7 @@ GET manager subtree metrics
 
 GET level metrics
 
-GET metrics with group_by, q3, q4, and q5 query parameters
+GET metrics with scope, q3, q4, and q5 query parameters
 
 Omitted q3, q4, and q5 query parameters use documented defaults
 
@@ -1221,7 +1218,7 @@ Other text is required when Other is selected
 
 Q8 no_major_barriers is mutually exclusive
 
-Dashboard sends scope, group_by, q3, q4, and q5 to /api/metrics
+Dashboard sends scope, q3, q4, and q5 to /api/metrics
 
 Dashboard refetches metrics when scope or Q3-Q5 criteria change
 ```

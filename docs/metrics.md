@@ -212,11 +212,10 @@ barrier_percentage = barrier_count / respondents_who_answered_Q8
 
 ## Group Breakdown
 
-The metrics endpoint can return `group_breakdown` rows for dashboard comparison.
-Supported values:
-
-- `department`
-- `level`
+The metrics endpoint returns `group_breakdown` rows for dashboard comparison,
+grouped by `level`. Department lives on the Employee record as display context
+only (see `docs/ADR.md` / `docs/PRD.md` §8) — it is not a supported dashboard
+grouping dimension for the initial version.
 
 Each group row must be recomputed from the employees and responses in that group,
 not derived by averaging child rows.

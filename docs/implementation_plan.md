@@ -39,25 +39,24 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - Dynamic Q3-Q5 matching count, denominator, and rate are implemented.
 - Tests assert metric unit conventions: top-level `RateMetric.value` fields are fractions, while distribution and group breakdown percentages are whole percentages.
 
-## Plan 5: Dashboard Metrics API
+## Plan 5: Dashboard Metrics API [Complete]
 
-- Implement `GET /api/metrics` test-first.
-- Support `scope=org`, `scope=manager&scope_id=...`, and `scope=level&scope_id=...`.
-- Support `group_by=department|level`.
-- Support `group_by` defaulting to `department`.
-- Support `q3`, `q4`, and `q5` query criteria with defaults of `more_than_5_hours`, `slightly_more`, and `slightly_better`.
-- Return `422` for `q3=not_sure` because `not_sure` is missing data.
-- Return a response compatible with `frontend/src/types/metrics.ts`.
-- Verify submitted responses affect later metrics responses.
+- `GET /api/metrics` is implemented test-first.
+- `scope=org`, `scope=manager&scope_id=...`, and `scope=level&scope_id=...` are supported.
+- `group_breakdown` is always grouped by `level` — department is not a supported grouping dimension for the initial version.
+- `q3`, `q4`, and `q5` query criteria default to `more_than_5_hours`, `slightly_more`, and `slightly_better`.
+- `q3=not_sure` returns `422` because `not_sure` is missing data.
+- The response is compatible with `frontend/src/types/metrics.ts`.
+- Tests verify submitted responses affect later metrics responses.
 
-## Plan 6: Frontend Alignment
+## Plan 6: Frontend Alignment [Complete]
 
 - Fix Q8 UI behavior so `no_major_barriers` is mutually exclusive.
 - Add tests for required survey fields, Q2 ranking, `Other` text, and Q8 exclusivity.
-- Add tests that dashboard requests include `scope`, `scope_id`, `group_by`, `q3`, `q4`, and `q5`.
+- Add tests that dashboard requests include `scope`, `scope_id`, `q3`, `q4`, and `q5`.
 - Keep local fallback behavior only as a demo aid until the backend is available.
 
-## Plan 7: End-to-End Validation
+## Plan 7: End-to-End Validation [Complete]
 
 - Run backend unit/API tests.
 - Run frontend type-check and production build.
