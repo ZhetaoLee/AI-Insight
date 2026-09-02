@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { DashboardMetricsResponse } from "../../types/metrics";
 import { NO_MAJOR_BARRIERS_CODE, OTHER_CODE } from "../../types/survey";
+import { InfoTooltip } from "./InfoTooltip";
 
 interface PanelRow {
   code: string;
@@ -13,7 +14,7 @@ interface PanelRow {
 
 interface PanelDef {
   title: string;
-  source: string;
+  help: string;
   denominator: number;
   rows: PanelRow[];
   foot: string;
@@ -32,7 +33,7 @@ function PanelCard({ panel }: { panel: PanelDef }) {
     <div className="card panel-card">
       <div className="panel-head">
         <div className="panel-title">{panel.title}</div>
-        <div className="card-eyebrow">{panel.source}</div>
+        <InfoTooltip label={`${panel.title} help`}>{panel.help}</InfoTooltip>
       </div>
       <div className="panel-rows">
         {panel.rows.map((r, idx) => (
@@ -65,67 +66,86 @@ const GREEN = "#1f9d7c";
 const GRAY = "#c3ccd4";
 const BARRIER_GRAY = "#9fb3c4";
 const DARK_GREEN = "#15806a";
+const FREQUENT_REWORK_CODES = ["often", "almost_always"];
+
+function pctForCodes(rows: { code: string; count: number }[], denominator: number, codes: string[]) {
+  const count = rows.filter((r) => codes.includes(r.code)).reduce((sum, row) => sum + row.count, 0);
+  return denominator ? Math.round((count / denominator) * 100) : 0;
+}
+
+function topRow<T extends { count: number }>(rows: T[]) {
+  return rows.reduce<T | null>((best, row) => (!best || row.count > best.count ? row : best), null);
+}
+
+function mostCommonFoot(row: { label: string; pct: number; count: number } | null, emptyText: string) {
+  return row && row.count ? `${row.label} is the most common answer, at ${row.pct}%.` : emptyText;
+}
+
+function mostCitedBarrierFoot(row: { label: string; pct: number; count: number } | null) {
+  return row && row.count ? `${row.label} is the most cited barrier, at ${row.pct}%.` : "No barriers selected yet.";
+}
 
 export function DistributionPanels({ metrics, visibleTitles }: DistributionPanelsProps) {
-  const betterQualityCount = metrics.work_quality.rows
-    .filter((r) => r.code === "slightly_better" || r.code === "much_better")
-    .reduce((s, r) => s + r.count, 0);
-  const betterQualityPct = metrics.population.respondents ? Math.round((betterQualityCount / metrics.population.respondents) * 100) : 0;
-  const moreOutputPct = Math.round(metrics.headline_metrics.reports_more_output.value * 100);
+  const betterQualityPct = pctForCodes(metrics.work_quality.rows, metrics.work_quality.denominator, ["slightly_better", "much_better"]);
+  const frequentReworkPct = pctForCodes(metrics.ai_rework_frequency.rows, metrics.ai_rework_frequency.denominator, FREQUENT_REWORK_CODES);
+  const moreOutputPct = pctForCodes(metrics.work_output.rows, metrics.work_output.denominator, ["slightly_more", "significantly_more"]);
+  const topTimeSaved = topRow(metrics.weekly_time_saved.rows);
+  const topBenefit = topRow(metrics.benefits.rows);
+  const topBarrier = topRow(metrics.barriers.rows);
 
   const panels: PanelDef[] = [
     {
-      title: "Weekly time saved",
-      source: `Q3 · n = ${metrics.weekly_time_saved.denominator}`,
+      title: "Time saved per week",
+      help: "Distribution of how much work time respondents estimate AI saves in a typical week.",
       denominator: metrics.weekly_time_saved.denominator,
       rows: metrics.weekly_time_saved.rows.map((r, idx) => ({
         ...r,
         color: r.code === "not_sure" ? GRAY : idx <= 1 ? AMBER : GREEN,
       })),
-      foot: `Midpoints 0 / 0.5 / 3 / 8 hours. "Not sure" is missing data, excluded from the ${metrics.headline_metrics.avg_weekly_hours_saved.denominator}-response average.`,
+      foot: mostCommonFoot(topTimeSaved, "No weekly time saved responses yet."),
       hoverableOther: false,
     },
     {
-      title: "Work output impact",
-      source: `Q4 · n = ${metrics.work_output.denominator}`,
+      title: "Output impact",
+      help: "Distribution of whether respondents complete less, the same, or more work when using AI.",
       denominator: metrics.work_output.denominator,
       rows: metrics.work_output.rows.map((r, idx) => ({ ...r, color: idx <= 1 ? RED : GREEN })),
       foot: `${moreOutputPct}% report more output than before AI.`,
       hoverableOther: false,
     },
     {
-      title: "Work quality impact",
-      source: `Q5 · n = ${metrics.work_quality.denominator}`,
+      title: "Quality impact",
+      help: "Distribution of whether respondents report worse, unchanged, or better work quality when using AI.",
       denominator: metrics.work_quality.denominator,
       rows: metrics.work_quality.rows.map((r, idx) => ({ ...r, color: idx <= 1 ? RED : GREEN })),
       foot: `${betterQualityPct}% report better quality; the rest see no meaningful change or worse.`,
       hoverableOther: false,
     },
     {
-      title: "AI rework frequency",
-      source: `Q6 · n = ${metrics.ai_rework_frequency.denominator}`,
+      title: "Rework burden",
+      help: "How often respondents need to substantially correct or rewrite AI output before using it.",
       denominator: metrics.ai_rework_frequency.denominator,
       rows: metrics.ai_rework_frequency.rows.map((r, idx) => ({ ...r, color: idx >= 3 ? RED : GREEN })),
-      foot: "How often respondents correct or rewrite AI output. Red bands are the review burden.",
+      foot: `${frequentReworkPct}% report frequent rework, often or almost always.`,
       hoverableOther: false,
     },
     {
-      title: "Primary benefits",
-      source: `Q7 · n = ${metrics.benefits.denominator}`,
+      title: "Where AI helps most",
+      help: "The single biggest day-to-day benefit respondents say AI provides.",
       denominator: metrics.benefits.denominator,
       rows: metrics.benefits.rows.map((r, idx) => ({ ...r, color: idx === 0 ? DARK_GREEN : GREEN })),
-      foot: 'Single choice, sorted by count descending. Hover "Other" for submitted text.',
+      foot: mostCommonFoot(topBenefit, "No primary benefit responses yet."),
       hoverableOther: true,
     },
     {
-      title: "Barriers",
-      source: `Q8 · multi-select · n = ${metrics.barriers.denominator}`,
+      title: "What's limiting AI value",
+      help: "The barriers respondents selected as limiting effective AI use at work.",
       denominator: metrics.barriers.denominator,
       rows: metrics.barriers.rows.map((r, idx) => ({
         ...r,
         color: r.code === NO_MAJOR_BARRIERS_CODE ? BARRIER_GRAY : idx === 0 ? DARK_GREEN : GREEN,
       })),
-      foot: 'One respondent may contribute to several barriers, so shares exceed 100%. "No major barriers" is exclusive.',
+      foot: mostCitedBarrierFoot(topBarrier),
       hoverableOther: true,
     },
   ];

@@ -729,14 +729,16 @@
 
 .panel-head {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
 }
 
 .panel-title {
   font-size: 15px;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
+  line-height: 1.3;
 }
 
 .panel-rows {

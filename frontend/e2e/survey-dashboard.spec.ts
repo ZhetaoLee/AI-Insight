@@ -71,6 +71,25 @@ test("employee survey submission is reflected in the executive dashboard", async
   await expect(page.locator(".hero-card .info-tooltip").first()).toHaveCSS("opacity", "1");
   await comboCard.locator(".info-help").hover();
   await expect(comboCard.locator(".info-tooltip")).toHaveCSS("opacity", "1");
+  const distributionGrid = page.locator(".distribution-grid");
+  await expect(distributionGrid.locator(".panel-card")).toHaveCount(6);
+  await expect(distributionGrid.locator(".card-eyebrow")).toHaveCount(0);
+  await expect(distributionGrid.locator(".info-help")).toHaveCount(6);
+  await expect(distributionGrid.getByText("Time saved per week", { exact: true })).toBeVisible();
+  await expect(distributionGrid.getByText("Output impact", { exact: true })).toBeVisible();
+  await expect(distributionGrid.getByText("Quality impact", { exact: true })).toBeVisible();
+  await expect(distributionGrid.getByText("Rework burden", { exact: true })).toBeVisible();
+  await expect(distributionGrid.getByText("Where AI helps most", { exact: true })).toBeVisible();
+  await expect(distributionGrid.getByText("What's limiting AI value", { exact: true })).toBeVisible();
+  await expect(distributionGrid).not.toContainText(/Q[3-8] ·/);
+  await expect(distributionGrid).not.toContainText("Midpoints 0 / 0.5 / 3 / 8 hours");
+  await expect(distributionGrid).not.toContainText("Single choice, sorted by count descending");
+  await expect(distributionGrid).not.toContainText("One respondent may contribute to several barriers");
+  await expect(distributionGrid.getByText(/is the most common answer, at \d+%/).first()).toBeVisible();
+  await expect(distributionGrid.getByText(/report frequent rework/)).toBeVisible();
+  await expect(distributionGrid.getByText(/is the most cited barrier, at \d+%/)).toBeVisible();
+  await distributionGrid.locator(".info-help").first().hover();
+  await expect(distributionGrid.locator(".info-tooltip").first()).toHaveCSS("opacity", "1");
 
   await page.getByRole("link", { name: "Survey" }).click();
   await expect(page).toHaveURL(/\/survey$/);

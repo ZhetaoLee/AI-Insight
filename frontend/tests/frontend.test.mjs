@@ -371,6 +371,28 @@ test("combo analysis card uses a leadership title and shared help tooltip", asyn
   assert.equal(dashboardStyles.includes(".combo-card-head"), true);
 });
 
+test("distribution panels use clear titles help tooltips and fact-based footers", async () => {
+  const panelsSource = await readFile(new URL("../src/components/dashboard/DistributionPanels.tsx", import.meta.url), "utf8");
+
+  assert.equal(panelsSource.includes("InfoTooltip"), true);
+  assert.equal(panelsSource.includes('title: "Time saved per week"'), true);
+  assert.equal(panelsSource.includes('title: "Output impact"'), true);
+  assert.equal(panelsSource.includes('title: "Quality impact"'), true);
+  assert.equal(panelsSource.includes('title: "Rework burden"'), true);
+  assert.equal(panelsSource.includes('title: "Where AI helps most"'), true);
+  assert.equal(panelsSource.includes('title: "What\'s limiting AI value"'), true);
+  assert.equal(panelsSource.includes("source:"), false);
+  assert.equal(panelsSource.includes("card-eyebrow"), false);
+  assert.equal(panelsSource.includes("Midpoints 0 / 0.5 / 3 / 8 hours"), false);
+  assert.equal(panelsSource.includes("avg_weekly_hours_saved.denominator"), false);
+  assert.equal(panelsSource.includes("How often respondents correct or rewrite AI output"), false);
+  assert.equal(panelsSource.includes("Single choice, sorted by count descending"), false);
+  assert.equal(panelsSource.includes("One respondent may contribute to several barriers"), false);
+  assert.equal(panelsSource.includes("most common answer"), true);
+  assert.equal(panelsSource.includes("report frequent rework"), true);
+  assert.equal(panelsSource.includes("most cited barrier"), true);
+});
+
 test("employee directory fallback is used only when the backend is unreachable", async () => {
   await withMockFetch(
     async () => {
