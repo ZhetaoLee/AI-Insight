@@ -72,3 +72,10 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - Docs and README match the final commands and API behavior.
 - Full backend, frontend, build, and E2E validation passes locally.
 - Intended tracked files are ready to commit and push to GitHub.
+
+## Post-Plan Bug Tracking
+
+- Bugs found after Plan 8 are tracked as public Markdown files under `bug/`.
+- Active bugs live directly in `bug/`.
+- Fixed bugs move to `bug/fixed/` and should include the fixing commit or date.
+- Bug files document observed issues and expected fixes; they do not imply the bugs have been fixed.

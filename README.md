@@ -80,6 +80,14 @@ GET /api/metrics
 POST /api/survey-responses
 ```
 
+## Bug Tracker
+
+Post-plan bugs are tracked as public Markdown files under `bug/`.
+
+- Active bugs live directly in `bug/`.
+- Fixed bugs move to `bug/fixed/`.
+- New bug reports should start from `bug/TEMPLATE.md`.
+
 ## Assumptions
 
 - MongoDB is the source of truth for employees and survey responses.
