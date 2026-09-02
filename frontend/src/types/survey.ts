@@ -45,7 +45,7 @@ export const OTHER_CODE = "other";
 export const NO_MAJOR_BARRIERS_CODE = "no_major_barriers";
 
 // Canonical question text, option lists, and answer codes follow docs/Questions.md
-// and docs/PRD.md §8 exactly (both must stay in sync per CLAUDE.md); the §22
+// and docs/PRD.md §8 exactly; the §22
 // Survey Response example fixes the nested shapes for ranked/"other" answers.
 
 export const AI_USAGE_FREQUENCY: SurveyOption[] = [

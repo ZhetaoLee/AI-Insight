@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { test } from "node:test";
 
 import {
@@ -232,6 +233,17 @@ test("dashboard manager selection keeps leaders and replaces stale or IC ids", (
   assert.equal(resolveDashboardManagerId(dashboardEmployees, "emp_104"), "emp_101");
   assert.equal(resolveDashboardManagerId(dashboardEmployees, "d1"), "emp_101");
   assert.equal(resolveDashboardManagerId([], "d1"), "d1");
+});
+
+test("dashboard toolbar does not render a nonfunctional search placeholder", async () => {
+  const [toolbarSource, dashboardStyles] = await Promise.all([
+    readFile(new URL("../src/components/dashboard/DashboardToolbar.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/DashboardPage.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(toolbarSource.includes("Search metric, team, or person"), false);
+  assert.equal(toolbarSource.includes("toolbar-search"), false);
+  assert.equal(dashboardStyles.includes("toolbar-search"), false);
 });
 
 test("employee directory fallback is used only when the backend is unreachable", async () => {

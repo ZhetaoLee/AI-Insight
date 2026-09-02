@@ -26,11 +26,6 @@ export function DashboardToolbar({
 
   return (
     <div className="dashboard-toolbar">
-      <div className="toolbar-search">
-        <div className="toolbar-search-dot" />
-        <div className="toolbar-search-text">Search metric, team, or person</div>
-      </div>
-
       <div className="toggle-group">
         {(["org", "manager", "level"] as const).map((t) => (
           <button

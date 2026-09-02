@@ -210,34 +210,6 @@
   min-width: 0;
 }
 
-.toolbar-search {
-  flex: 1 1 200px;
-  min-width: 180px;
-  max-width: 300px;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  background: var(--db-border-2);
-  border-radius: 10px;
-  padding: 10px 13px;
-}
-
-.toolbar-search-dot {
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  border: 1.8px solid var(--db-muted-5);
-  flex: none;
-}
-
-.toolbar-search-text {
-  font-size: 12.5px;
-  color: #98a2ad;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .toggle-group {
   display: flex;
   gap: 3px;

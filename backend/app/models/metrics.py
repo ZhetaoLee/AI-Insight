@@ -7,8 +7,8 @@ from app.models.survey_response import QualityChange, WorkOutputChange
 
 ScopeType = Literal["org", "manager", "level"]
 # Department lives on the Employee record as display context only — it is not
-# a supported dashboard grouping dimension (see docs/ADR.md / CLAUDE.md
-# architecture principle 7). Level is the only group_breakdown dimension.
+# a supported dashboard grouping dimension (see docs/ADR.md and docs/PRD.md).
+# Level is the only group_breakdown dimension.
 GroupByField = Literal["level"]
 AnalysisWeeklyTimeSaved = Literal["no_noticeable_time_saved", "less_than_1_hour", "1_5_hours", "more_than_5_hours"]
 
