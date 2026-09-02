@@ -16,16 +16,6 @@ import type { DashboardMetricsResponse, DashboardScope, Q3Q5Criteria } from "../
 import { NO_MAJOR_BARRIERS_CODE } from "../types/survey";
 import "./DashboardPage.css";
 
-const HERO_PICK: Record<NavSection, number[]> = {
-  Dashboard: [],
-  Adoption: [1],
-  "Value areas": [1, 2],
-  "Time saved": [2],
-  "Output & quality": [3],
-  Barriers: [1, 3],
-  Respondents: [0],
-};
-
 const PANEL_PICK: Record<NavSection, string[]> = {
   Dashboard: [],
   Adoption: [],
@@ -91,10 +81,8 @@ export function DashboardPage() {
   }
 
   const all = navSection === "Dashboard";
-  const heroIndices = HERO_PICK[navSection];
   const panelTitles = PANEL_PICK[navSection];
   const show = {
-    heroes: all || heroIndices.length > 0,
     chart: all || navSection === "Adoption" || navSection === "Respondents",
     q2: all || navSection === "Value areas",
     combo: all || navSection === "Time saved" || navSection === "Output & quality",
@@ -144,7 +132,7 @@ export function DashboardPage() {
 
             {metricsError && <div className="dashboard-banner">{metricsError}</div>}
 
-            {show.heroes && <HeroCards metrics={metrics} visibleIndices={all ? "all" : heroIndices} />}
+            <HeroCards metrics={metrics} />
 
             {show.chart && (
               <div className="charts-grid">

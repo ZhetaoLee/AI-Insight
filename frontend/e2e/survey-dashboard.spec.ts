@@ -32,6 +32,12 @@ test("employee survey submission is reflected in the executive dashboard", async
   await expect(page.getByText("Executive overview")).toBeVisible();
   await expect(page.getByText(/Small sample:/)).toHaveCount(0);
   await expect(page.getByText(/Rates are directional only/)).toHaveCount(0);
-  await expect(page.getByText("Response rate", { exact: true })).toBeVisible();
-  await expect(page.getByText("AI adoption rate", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Employees", { exact: true })).toBeVisible();
+  await expect(page.getByText("Respondents", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Active AI Users", { exact: true })).toBeVisible();
+  await expect(page.locator(".hero-card")).toHaveCount(3);
+  await expect(page.locator(".hero-help")).toHaveCount(3);
+
+  await page.locator(".hero-help").first().hover();
+  await expect(page.locator(".hero-tooltip").first()).toHaveCSS("opacity", "1");
 });

@@ -549,23 +549,19 @@ The Executive Dashboard should prioritize insight over raw survey data.
 
 ## 13.1 Header Metrics
 
-Primary KPI cards:
+Standalone header cards for the initial dashboard:
 
 ```text
-Eligible Employees
-
+Employees
 Respondents
-
-Response Rate
-
 Active AI Users
-
-AI Adoption Rate
-
-Average Weekly Time Saved
 ```
 
-Each metric should also display the number of valid respondents when useful.
+These cards should display plain counts for the selected dashboard scope. Each
+card should include a hover-triggered help icon explaining the count. Rate and
+average metrics such as response rate, AI adoption rate, and average weekly time
+saved remain available in the dashboard's coverage, chart, analysis, and records
+sections rather than as cluttered top-row cards.
 
 ---
 

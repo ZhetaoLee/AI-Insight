@@ -1,7 +1,8 @@
 # Dashboard hero cards: wrong set of metrics, too much per-card clutter
 
-- **Status:** Active
+- **Status:** Fixed
 - **Reported:** 2026-09-02
+- **Fixed:** 2026-09-02
 
 ## Summary
 
@@ -98,4 +99,48 @@ Once the pill/sparkline/sub-text are removed, `.hero-pill`, `.hero-spark`, `.spa
 4. **`frontend/e2e/survey-dashboard.spec.ts`** — update the two label assertions (lines 30-31) to the new card titles.
 5. **Optional / worth considering alongside**: `docs/PRD.md` §13.1 doesn't need factual correction (the new design fits it better than the old one already does), but could be tightened to explicitly say which of the six listed metrics get standalone cards vs. which live inside others, so this doesn't drift again.
 
-No backend, database, or type changes needed — all three requested numbers are already present in the existing `/api/metrics` response shape on both frontend and backend.
+## Fix
+
+Replaced the cluttered four-card KPI row with three plain population count cards:
+
+- `Employees`
+- `Respondents`
+- `Active AI Users`
+
+Each card now shows only the count for the selected dashboard scope plus a hover/focus help icon with explanatory text. The old fraction pills, sparklines, card subtext, and topic-specific hero-card index mapping were removed.
+
+Implementation notes:
+
+- `frontend/src/components/dashboard/HeroCards.tsx`: replaced the old rate/average cards with three count cards sourced from `metrics.population`.
+- `frontend/src/pages/DashboardPage.tsx`: removed `HERO_PICK`; the three population cards now stay visible across dashboard sections because they describe the active scope, not a topic-specific metric.
+- `frontend/src/pages/DashboardPage.css`: removed dead `.hero-pill`, `.hero-spark`, `.spark-bar`, and `.hero-sub` rules; added `.hero-help` and `.hero-tooltip`.
+- `frontend/tests/frontend.test.mjs`: added source-level regression coverage for the new card set and removal of old clutter.
+- `frontend/e2e/survey-dashboard.spec.ts`: updated dashboard assertions to expect the three new card labels, verify exactly three hero cards/help icons, and verify tooltip hover behavior.
+- `docs/PRD.md`: clarified §13.1 so the initial dashboard's standalone header cards are the three plain population counts, while rate/average metrics remain in the existing coverage, chart, analysis, and records sections.
+
+No backend or database changes were needed because `eligible_employees`, `respondents`, and `active_ai_users` already exist in the `/api/metrics` response.
+
+No `AGENTS.md` or `CLAUDE.md` change was needed because this fix did not alter implementation workflow or architecture guidance.
+
+## Verification
+
+Initial regression test failed before the implementation:
+
+- `npm test`
+
+After implementation, frontend regression testing passed.
+
+Full local verification run on 2026-09-02:
+
+- `uv run pytest`
+- `npm test`
+- `npm run lint`
+- `npm run build`
+- `npm run test:e2e`
+- `git diff --check`
+
+Live-flow verification:
+
+- Playwright verifies the dashboard shows `Employees`, `Respondents`, and `Active AI Users`.
+- Playwright verifies exactly three hero cards and three help icons render.
+- Playwright verifies hovering a help icon reveals the tooltip.

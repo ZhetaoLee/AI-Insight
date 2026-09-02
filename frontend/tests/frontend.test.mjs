@@ -270,6 +270,32 @@ test("dashboard does not render an unsupported small-sample warning", async () =
   assert.equal(dashboardStyles.includes("small-sample-banner"), false);
 });
 
+test("dashboard hero cards show plain population counts without old card clutter", async () => {
+  const [heroCardsSource, dashboardPageSource, dashboardStyles] = await Promise.all([
+    readFile(new URL("../src/components/dashboard/HeroCards.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/DashboardPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/DashboardPage.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(heroCardsSource.includes('label: "Employees"'), true);
+  assert.equal(heroCardsSource.includes('label: "Respondents"'), true);
+  assert.equal(heroCardsSource.includes('label: "Active AI Users"'), true);
+  assert.equal(heroCardsSource.includes('label: "Reports more output"'), false);
+  assert.equal(heroCardsSource.includes('label: "Response rate"'), false);
+  assert.equal(heroCardsSource.includes('label: "AI adoption rate"'), false);
+  assert.equal(heroCardsSource.includes('label: "Avg weekly time saved"'), false);
+  assert.equal(heroCardsSource.includes("hero-help"), true);
+  assert.equal(heroCardsSource.includes("hero-tooltip"), true);
+  assert.equal(heroCardsSource.includes("hero-pill"), false);
+  assert.equal(heroCardsSource.includes("hero-spark"), false);
+  assert.equal(heroCardsSource.includes("hero-sub"), false);
+  assert.equal(dashboardPageSource.includes("HERO_PICK"), false);
+  assert.equal(dashboardStyles.includes("hero-pill"), false);
+  assert.equal(dashboardStyles.includes("hero-spark"), false);
+  assert.equal(dashboardStyles.includes("spark-bar"), false);
+  assert.equal(dashboardStyles.includes("hero-sub"), false);
+});
+
 test("employee directory fallback is used only when the backend is unreachable", async () => {
   await withMockFetch(
     async () => {
