@@ -62,6 +62,8 @@ http://localhost:8000
 Useful frontend commands:
 
 ```bash
+npm test
+npm run test:e2e
 npm run lint
 npm run build
 npm run preview
@@ -74,17 +76,12 @@ Initial implemented endpoints:
 ```text
 GET /health
 GET /api/employees
-POST /api/survey-responses
-```
-
-Planned endpoints remain documented in `docs/`:
-
-```text
 GET /api/metrics
+POST /api/survey-responses
 ```
 
 ## Assumptions
 
 - MongoDB is the source of truth for employees and survey responses.
 - Seed data is deterministic and contains 10 employees across the required hierarchy levels.
-- Until backend survey and metrics endpoints are implemented, the frontend keeps its local fallback behavior.
+- The frontend keeps local fallback behavior as a demo aid when the backend is unavailable.
