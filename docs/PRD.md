@@ -510,7 +510,7 @@ Q8 is multiple choice and displayed as a horizontal bar chart sorted by count de
 barrier_percentage = barrier_count / respondents_who_answered_Q8
 ```
 
-One respondent may contribute to multiple barrier counts. `No major barriers` should be mutually exclusive with other choices. The `Other` bar should display as `Other`, with submitted free-text details shown on hover.
+One respondent may contribute to multiple barrier counts. `No major barriers` should be mutually exclusive with other choices. The `Other` bar should display as `Other`, with submitted free-text details shown on hover. Dashboard summary text that names the "most cited barrier" should consider only actual barrier options, excluding `No major barriers`; if no actual barriers are selected, the summary should say that no barriers have been selected yet.
 
 ## 12.4 Dynamic Q3-Q5 Analysis
 

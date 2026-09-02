@@ -77,6 +77,10 @@ function topRow<T extends { count: number }>(rows: T[]) {
   return rows.reduce<T | null>((best, row) => (!best || row.count > best.count ? row : best), null);
 }
 
+export function topActualBarrierRow<T extends { code: string; count: number }>(rows: T[]) {
+  return topRow(rows.filter((row) => row.code !== NO_MAJOR_BARRIERS_CODE));
+}
+
 function mostCommonFoot(row: { label: string; pct: number; count: number } | null, emptyText: string) {
   return row && row.count ? `${row.label} is the most common answer, at ${row.pct}%.` : emptyText;
 }
@@ -91,7 +95,7 @@ export function DistributionPanels({ metrics, visibleTitles }: DistributionPanel
   const moreOutputPct = pctForCodes(metrics.work_output.rows, metrics.work_output.denominator, ["slightly_more", "significantly_more"]);
   const topTimeSaved = topRow(metrics.weekly_time_saved.rows);
   const topBenefit = topRow(metrics.benefits.rows);
-  const topBarrier = topRow(metrics.barriers.rows);
+  const topBarrier = topActualBarrierRow(metrics.barriers.rows);
 
   const panels: PanelDef[] = [
     {

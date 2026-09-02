@@ -186,7 +186,11 @@ barrier_percentage = barrier_count / respondents_who_answered_Q8
 ```
 
 `no_major_barriers` is mutually exclusive with every other barrier choice. Show
-`other` as `Other` in the chart. On hover, show submitted `other_text` details.
+`no_major_barriers` in the distribution, but exclude it from any "most cited
+barrier" summary or footer because it means no barrier was reported. If no
+actual barrier option has a count, show an empty-state summary such as "No
+barriers selected yet." Show `other` as `Other` in the chart. On hover, show
+submitted `other_text` details.
 
 ## Group Breakdown
 

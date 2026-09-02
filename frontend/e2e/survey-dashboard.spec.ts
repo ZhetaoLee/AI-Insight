@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-function surveySubmission(employeeId: string) {
+type BarrierSubmission = { option: string; other_text: string | null };
+
+function surveySubmission(employeeId: string, barriers: BarrierSubmission[] = [{ option: "lack_of_training", other_text: null }]) {
   return {
     employee_id: employeeId,
     answers: {
@@ -15,7 +17,7 @@ function surveySubmission(employeeId: string) {
       quality_change: "slightly_better",
       correction_frequency: "sometimes",
       biggest_benefit: { option: "saves_time", other_text: null },
-      barriers: [{ option: "lack_of_training", other_text: null }],
+      barriers,
     },
   };
 }
@@ -79,6 +81,13 @@ test("employee survey submission is reflected in the executive dashboard", async
   for (const row of managerMetrics.group_breakdown.rows) {
     expect(row.avg_hours_saved).toBeUndefined();
     expect(row.avg_hours_saved_denominator).toBeUndefined();
+  }
+
+  for (const employeeId of ["emp_101", "emp_102", "emp_103", "emp_106"]) {
+    const noBarrierResponse = await request.post("/api/survey-responses", {
+      data: surveySubmission(employeeId, [{ option: "no_major_barriers", other_text: null }]),
+    });
+    expect(noBarrierResponse.status()).toBe(201);
   }
 
   await page.getByRole("link", { name: "Dashboard" }).click();
@@ -174,7 +183,8 @@ test("employee survey submission is reflected in the executive dashboard", async
   await expect(distributionGrid).not.toContainText("One respondent may contribute to several barriers");
   await expect(distributionGrid.getByText(/is the most common answer, at \d+%/).first()).toBeVisible();
   await expect(distributionGrid.getByText(/report frequent rework/)).toBeVisible();
-  await expect(distributionGrid.getByText(/is the most cited barrier, at \d+%/)).toBeVisible();
+  await expect(distributionGrid.getByText(/No major barriers is the most cited barrier/)).toHaveCount(0);
+  await expect(distributionGrid.getByText(/Lack of training is the most cited barrier, at \d+%/)).toBeVisible();
   await distributionGrid.locator(".info-help").first().hover();
   await expect(distributionGrid.locator(".info-tooltip").first()).toHaveCSS("opacity", "1");
   const recordsTable = page.locator(".table-card");

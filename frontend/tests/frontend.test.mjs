@@ -12,6 +12,7 @@ import { SEED_EMPLOYEES, fetchEmployees } from "../src/api/employees.ts";
 import { fetchDashboardMetrics, fetchOrgDirectory } from "../src/api/metrics.ts";
 import { fetchSubmittedEmployeeIds, submitSurveyResponse } from "../src/api/survey.ts";
 import { ANALYSIS_WEEKLY_TIME_SAVED } from "../src/components/dashboard/ComboAnalysisCard.tsx";
+import { topActualBarrierRow } from "../src/components/dashboard/DistributionPanels.tsx";
 import { buildChildrenMap, resolveDashboardManagerId, subtreeOf } from "../src/lib/dashboardScope.ts";
 
 const validSurveyState = (overrides = {}) => ({
@@ -616,6 +617,17 @@ test("distribution panels use clear titles help tooltips and fact-based footers"
   assert.equal(panelsSource.includes("most common answer"), true);
   assert.equal(panelsSource.includes("report frequent rework"), true);
   assert.equal(panelsSource.includes("most cited barrier"), true);
+});
+
+test("barriers panel footer chooses the top actual barrier instead of no_major_barriers", () => {
+  const rows = [
+    { code: "no_major_barriers", label: "No major barriers", count: 7, pct: 70, otherTexts: {} },
+    { code: "lack_of_training", label: "Lack of training", count: 3, pct: 30, otherTexts: {} },
+    { code: "tool_access", label: "Tool access", count: 1, pct: 10, otherTexts: {} },
+  ];
+
+  assert.equal(topActualBarrierRow(rows)?.code, "lack_of_training");
+  assert.equal(topActualBarrierRow(rows.filter((row) => row.code === "no_major_barriers")), null);
 });
 
 test("dashboard removes midpoint-derived weekly hours estimates", async () => {
