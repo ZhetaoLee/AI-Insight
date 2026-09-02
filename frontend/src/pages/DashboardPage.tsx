@@ -10,8 +10,9 @@ import { HeroCards } from "../components/dashboard/HeroCards";
 import { RecordsTable } from "../components/dashboard/RecordsTable";
 import { ValueAreaRankingCard } from "../components/dashboard/ValueAreaRankingCard";
 import type { NavSection } from "../components/dashboard/navSections";
+import { resolveDashboardManagerId } from "../lib/dashboardScope";
 import { LEVEL_LABELS, type Employee, type EmployeeLevel } from "../types/employee";
-import type { DashboardMetricsResponse, DashboardScope, GroupByField, Q3Q5Criteria } from "../types/metrics";
+import type { DashboardMetricsResponse, DashboardScope, Q3Q5Criteria } from "../types/metrics";
 import { NO_MAJOR_BARRIERS_CODE } from "../types/survey";
 import "./DashboardPage.css";
 
@@ -42,7 +43,6 @@ export function DashboardPage() {
   const [scopeType, setScopeType] = useState<"org" | "manager" | "level">("org");
   const [managerId, setManagerId] = useState("d1");
   const [level, setLevel] = useState<EmployeeLevel>("ic");
-  const [groupBy, setGroupBy] = useState<GroupByField>("department");
   const [navSection, setNavSection] = useState<NavSection>("Dashboard");
   const [q3Q5Criteria, setQ3Q5Criteria] = useState<Q3Q5Criteria>({
     weekly_time_saved: "more_than_5_hours",
@@ -50,10 +50,16 @@ export function DashboardPage() {
     quality_change: "slightly_better",
   });
   const [metrics, setMetrics] = useState<DashboardMetricsResponse | null>(null);
+  const [metricsError, setMetricsError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOrgDirectory().then(setOrgEmployees);
   }, []);
+
+  useEffect(() => {
+    const nextManagerId = resolveDashboardManagerId(orgEmployees, managerId);
+    if (nextManagerId !== managerId) setManagerId(nextManagerId);
+  }, [managerId, orgEmployees]);
 
   const scope: DashboardScope = useMemo(() => {
     if (scopeType === "org") return { type: "org" };
@@ -63,18 +69,25 @@ export function DashboardPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetchDashboardMetrics(scope, groupBy, q3Q5Criteria).then((m) => {
-      if (!cancelled) setMetrics(m);
-    });
+    setMetricsError(null);
+    fetchDashboardMetrics(scope, q3Q5Criteria)
+      .then((m) => {
+        if (!cancelled) setMetrics(m);
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setMetricsError(error instanceof Error ? error.message : "Unable to load dashboard metrics.");
+        }
+      });
     return () => {
       cancelled = true;
     };
-  }, [scope, groupBy, q3Q5Criteria]);
+  }, [scope, q3Q5Criteria]);
 
   if (!metrics) {
     return (
       <div className="dashboard-shell">
-        <div className="dashboard-loading">Loading dashboard…</div>
+        <div className="dashboard-loading">{metricsError ?? "Loading dashboard…"}</div>
       </div>
     );
   }
@@ -91,7 +104,6 @@ export function DashboardPage() {
   };
 
   const barrierTotal = metrics.barriers.rows.filter((r) => r.code !== NO_MAJOR_BARRIERS_CODE).reduce((s, r) => s + r.count, 0);
-  const groupLabel = groupBy === "department" ? "Department" : "Level";
   const managerName = scopeType === "manager" ? orgEmployees.find((e) => e.id === managerId)?.name ?? "" : "";
   const scopeCaption =
     scopeType === "org"
@@ -139,12 +151,14 @@ export function DashboardPage() {
               </div>
             )}
 
+            {metricsError && <div className="small-sample-banner">{metricsError}</div>}
+
             {show.heroes && <HeroCards metrics={metrics} visibleIndices={all ? "all" : heroIndices} />}
 
             {show.chart && (
               <div className="charts-grid">
-                <AdoptionChart groupBreakdown={metrics.group_breakdown} groupLabel={groupLabel} onGroupByChange={setGroupBy} />
-                <AdoptionSidePanel adoptionRate={metrics.headline_metrics.ai_adoption_rate} groupBreakdown={metrics.group_breakdown} groupLabel={groupLabel} />
+                <AdoptionChart groupBreakdown={metrics.group_breakdown} />
+                <AdoptionSidePanel adoptionRate={metrics.headline_metrics.ai_adoption_rate} groupBreakdown={metrics.group_breakdown} groupLabel="Level" />
               </div>
             )}
 
@@ -160,9 +174,7 @@ export function DashboardPage() {
             {show.table && (
               <RecordsTable
                 groupBreakdown={metrics.group_breakdown}
-                groupLabel={groupLabel}
                 eligibleTotal={metrics.population.eligible_employees}
-                onGroupByChange={setGroupBy}
               />
             )}
           </div>

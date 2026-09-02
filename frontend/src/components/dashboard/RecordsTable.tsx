@@ -1,12 +1,10 @@
 import { useState } from "react";
-import type { GroupBreakdown, GroupByField, GroupRow } from "../../types/metrics";
+import type { GroupBreakdown, GroupRow } from "../../types/metrics";
 import { abbreviate } from "../../lib/dashboardFormat";
 
 interface RecordsTableProps {
   groupBreakdown: GroupBreakdown;
-  groupLabel: string;
   eligibleTotal: number;
-  onGroupByChange: (g: GroupByField) => void;
 }
 
 type SortKey = "name" | "respondents" | "adoption_rate" | "more_output_rate" | "avg_hours_saved" | "frequent_rework_rate";
@@ -21,7 +19,7 @@ const COLUMNS: { key: SortKey | "top_barrier"; label: string; align: "left" | "r
   { key: "top_barrier", label: "Top barrier", align: "left", sortable: false },
 ];
 
-export function RecordsTable({ groupBreakdown, groupLabel, eligibleTotal, onGroupByChange }: RecordsTableProps) {
+export function RecordsTable({ groupBreakdown, eligibleTotal }: RecordsTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>("adoption_rate");
   const [sortDir, setSortDir] = useState<1 | -1>(-1);
 
@@ -49,19 +47,7 @@ export function RecordsTable({ groupBreakdown, groupLabel, eligibleTotal, onGrou
   return (
     <div className="card table-card">
       <div className="table-head">
-        <div className="card-title">{groupLabel} records</div>
-        <div className="toggle-group small" style={{ marginLeft: "auto" }}>
-          {(["department", "level"] as GroupByField[]).map((g) => (
-            <button
-              key={g}
-              type="button"
-              className={groupBreakdown.group_by === g ? "toggle-btn active" : "toggle-btn"}
-              onClick={() => onGroupByChange(g)}
-            >
-              {g === "department" ? "Department" : "Level"}
-            </button>
-          ))}
-        </div>
+        <div className="card-title">Level records</div>
       </div>
       <div className="table-scroll">
         <table className="records-table">

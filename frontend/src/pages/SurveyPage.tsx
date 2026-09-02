@@ -6,13 +6,21 @@ import { MultiSelectQuestion } from "../components/survey/MultiSelectQuestion";
 import { OtherTextInput } from "../components/survey/OtherTextInput";
 import { RankQuestion } from "../components/survey/RankQuestion";
 import { SingleSelectQuestion } from "../components/survey/SingleSelectQuestion";
+import {
+  buildSurveyResponseSubmission,
+  hasSurveyErrors,
+  toggleBarrierSelection,
+  TOP_VALUE_AREA_RANK_COUNT,
+  validateSurveyForm,
+  type FieldErrors,
+  type SurveyFormState,
+} from "../lib/surveyForm";
 import type { Employee } from "../types/employee";
 import {
   AI_USAGE_FREQUENCY,
   BARRIERS,
   BIGGEST_BENEFIT,
   CORRECTION_FREQUENCY,
-  NO_MAJOR_BARRIERS_CODE,
   OTHER_CODE,
   QUALITY_CHANGE,
   TOP_VALUE_AREAS,
@@ -21,29 +29,10 @@ import {
 } from "../types/survey";
 import "./SurveyPage.css";
 
-const TOP_VALUE_AREA_RANK_COUNT = 3;
-
-type FieldErrors = Partial<
-  Record<
-    | "employee"
-    | "ai_usage_frequency"
-    | "top_value_areas"
-    | "top_value_area_other"
-    | "weekly_time_saved"
-    | "work_output_change"
-    | "quality_change"
-    | "correction_frequency"
-    | "biggest_benefit"
-    | "biggest_benefit_other"
-    | "barriers"
-    | "barriers_other",
-    boolean
-  >
->;
-
 export function SurveyPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
+  const [employeeLoadError, setEmployeeLoadError] = useState<string | null>(null);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
 
   const [aiUsageFrequency, setAiUsageFrequency] = useState<string | null>(null);
@@ -66,6 +55,9 @@ export function SurveyPage() {
   useEffect(() => {
     fetchEmployees()
       .then(setEmployees)
+      .catch((error) => {
+        setEmployeeLoadError(error instanceof Error ? error.message : "Unable to load employees.");
+      })
       .finally(() => setLoadingEmployees(false));
   }, []);
 
@@ -79,11 +71,7 @@ export function SurveyPage() {
   }
 
   function toggleBarrier(code: string) {
-    setBarrierCodes((prev) => {
-      if (prev.includes(code)) return prev.filter((c) => c !== code);
-      if (code === NO_MAJOR_BARRIERS_CODE) return [code];
-      return [...prev.filter((c) => c !== NO_MAJOR_BARRIERS_CODE), code];
-    });
+    setBarrierCodes((prev) => toggleBarrierSelection(prev, code));
     setErrors((prev) => ({ ...prev, barriers: false, barriers_other: false }));
     setSubmitError(null);
   }
@@ -110,55 +98,34 @@ export function SurveyPage() {
   const showBiggestBenefitOther = biggestBenefit === OTHER_CODE;
   const includesOtherBarrier = barrierCodes.includes(OTHER_CODE);
 
+  const formState: SurveyFormState = {
+    employeeId,
+    aiUsageFrequency,
+    topValueAreaCodes,
+    topValueAreaOtherText,
+    weeklyTimeSaved,
+    workOutputChange,
+    qualityChange,
+    correctionFrequency,
+    biggestBenefit,
+    biggestBenefitOtherText,
+    barrierCodes,
+    barriersOtherText,
+  };
+
   async function handleSubmit() {
     setSubmitError(null);
     setSubmitted(false);
-    const hasConflictingBarriers = barrierCodes.includes(NO_MAJOR_BARRIERS_CODE) && barrierCodes.length > 1;
-    const nextErrors: FieldErrors = {
-      employee: !employeeId,
-      ai_usage_frequency: !aiUsageFrequency,
-      top_value_areas: topValueAreaCodes.length !== TOP_VALUE_AREA_RANK_COUNT,
-      top_value_area_other: includesOtherArea && !topValueAreaOtherText.trim(),
-      weekly_time_saved: !weeklyTimeSaved,
-      work_output_change: !workOutputChange,
-      quality_change: !qualityChange,
-      correction_frequency: !correctionFrequency,
-      biggest_benefit: !biggestBenefit,
-      biggest_benefit_other: showBiggestBenefitOther && !biggestBenefitOtherText.trim(),
-      barriers: barrierCodes.length === 0 || hasConflictingBarriers,
-      barriers_other: includesOtherBarrier && !barriersOtherText.trim(),
-    };
-    const hasErrors = Object.values(nextErrors).some(Boolean);
+    const nextErrors = validateSurveyForm(formState);
+    const hasErrors = hasSurveyErrors(nextErrors);
     setErrors(nextErrors);
-    if (hasErrors || !employeeId || !aiUsageFrequency || !weeklyTimeSaved || !workOutputChange || !qualityChange || !correctionFrequency || !biggestBenefit) {
+    if (hasErrors) {
       return;
     }
 
     setSubmitting(true);
     try {
-      await submitSurveyResponse({
-        employee_id: employeeId,
-        answers: {
-          ai_usage_frequency: aiUsageFrequency,
-          top_value_areas: topValueAreaCodes.map((area, i) => ({
-            area,
-            rank: i + 1,
-            other_text: area === OTHER_CODE ? topValueAreaOtherText.trim() : null,
-          })),
-          weekly_time_saved: weeklyTimeSaved,
-          work_output_change: workOutputChange,
-          quality_change: qualityChange,
-          correction_frequency: correctionFrequency,
-          biggest_benefit: {
-            option: biggestBenefit,
-            other_text: showBiggestBenefitOther ? biggestBenefitOtherText.trim() : null,
-          },
-          barriers: barrierCodes.map((option) => ({
-            option,
-            other_text: option === OTHER_CODE ? barriersOtherText.trim() : null,
-          })),
-        },
-      });
+      await submitSurveyResponse(buildSurveyResponseSubmission(formState));
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
@@ -168,7 +135,7 @@ export function SurveyPage() {
     }
   }
 
-  const hasErrors = Object.values(errors).some(Boolean);
+  const hasErrors = hasSurveyErrors(errors);
   const rankedAreas = topValueAreaCodes.map((area, i) => ({ area, rank: i + 1, other_text: null }));
 
   return (
@@ -210,6 +177,7 @@ export function SurveyPage() {
             }}
             error={errors.employee}
           />
+          {employeeLoadError && <div className="footer-error">{employeeLoadError}</div>}
         </div>
 
         <div className="survey-group">

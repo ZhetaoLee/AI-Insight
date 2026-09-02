@@ -3,10 +3,14 @@ from typing import Literal
 from pydantic import BaseModel, field_validator
 
 from app.models.employee import EmployeeLevel
-from app.models.survey_response import QualityChange, WeeklyTimeSaved, WorkOutputChange
+from app.models.survey_response import QualityChange, WorkOutputChange
 
 ScopeType = Literal["org", "manager", "level"]
-GroupByField = Literal["department", "level"]
+# Department lives on the Employee record as display context only — it is not
+# a supported dashboard grouping dimension (see docs/ADR.md / CLAUDE.md
+# architecture principle 7). Level is the only group_breakdown dimension.
+GroupByField = Literal["level"]
+AnalysisWeeklyTimeSaved = Literal["no_noticeable_time_saved", "less_than_1_hour", "1_5_hours", "more_than_5_hours"]
 
 
 class ScopeDescriptor(BaseModel):
@@ -99,13 +103,13 @@ class OptionDistribution(BaseModel):
 
 
 class Q3Q5Criteria(BaseModel):
-    weekly_time_saved: WeeklyTimeSaved
+    weekly_time_saved: AnalysisWeeklyTimeSaved
     work_output_change: WorkOutputChange
     quality_change: QualityChange
 
     @field_validator("weekly_time_saved")
     @classmethod
-    def reject_not_sure(cls, value: WeeklyTimeSaved) -> WeeklyTimeSaved:
+    def reject_not_sure(cls, value: AnalysisWeeklyTimeSaved) -> AnalysisWeeklyTimeSaved:
         if value == "not_sure":
             raise ValueError("not_sure is not valid for Q3-Q5 analysis criteria")
         return value

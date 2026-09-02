@@ -180,48 +180,48 @@ def test_aggregate_group_breakdown_recomputes_group_metrics(metric_employees, me
     metrics = aggregate(metric_employees, metric_responses)
     rows = {row.key: row for row in metrics.group_breakdown.rows}
 
-    assert metrics.group_breakdown.group_by == "department"
-    assert rows["Engineering"].eligible_employees == 3
-    assert rows["Engineering"].respondents == 3
-    assert rows["Engineering"].adoption_rate == 67
-    assert rows["Engineering"].more_output_rate == 67
-    assert rows["Engineering"].avg_hours_saved == 8
-    assert rows["Engineering"].avg_hours_saved_denominator == 2
-    assert rows["Engineering"].frequent_rework_rate == 33
-    assert rows["Engineering"].top_barrier is not None
-    assert rows["Engineering"].top_barrier.model_dump() == {"code": "lack_of_training", "label": "Lack of training"}
-    assert rows["Product"].eligible_employees == 2
-    assert rows["Product"].respondents == 1
-    assert rows["Product"].adoption_rate == 100
-    assert rows["Product"].more_output_rate == 0
-    assert rows["Product"].avg_hours_saved == 0
-    assert rows["Product"].avg_hours_saved_denominator == 1
-    assert rows["Product"].frequent_rework_rate == 100
-    assert rows["Product"].top_barrier is not None
-    assert rows["Product"].top_barrier.model_dump() == {"code": "other", "label": "Other"}
+    assert metrics.group_breakdown.group_by == "level"
+    assert rows["manager"].eligible_employees == 1
+    assert rows["manager"].respondents == 1
+    assert rows["manager"].adoption_rate == 100
+    assert rows["manager"].more_output_rate == 100
+    assert rows["manager"].avg_hours_saved == 8
+    assert rows["manager"].avg_hours_saved_denominator == 1
+    assert rows["manager"].frequent_rework_rate == 0
+    assert rows["manager"].top_barrier is not None
+    assert rows["manager"].top_barrier.model_dump() == {"code": "lack_of_training", "label": "Lack of training"}
+    assert rows["ic"].eligible_employees == 4
+    assert rows["ic"].respondents == 3
+    assert rows["ic"].adoption_rate == 67
+    assert rows["ic"].more_output_rate == 33
+    assert rows["ic"].avg_hours_saved == 4
+    assert rows["ic"].avg_hours_saved_denominator == 2
+    assert rows["ic"].frequent_rework_rate == 67
+    assert rows["ic"].top_barrier is not None
+    assert rows["ic"].top_barrier.model_dump() == {"code": "lack_of_training", "label": "Lack of training"}
 
 
 def test_group_breakdown_group_without_respondents_returns_null_rates(metric_employees, metric_responses):
     employees = [
         *metric_employees,
-        Employee(id="emp_206", name="No Response", department="HR", level="ic", manager_id=None),
+        Employee(id="emp_206", name="No Response", department="HR", level="director", manager_id=None),
     ]
 
     metrics = aggregate(employees, metric_responses)
     rows = {row.key: row for row in metrics.group_breakdown.rows}
 
-    assert rows["HR"].eligible_employees == 1
-    assert rows["HR"].respondents == 0
-    assert rows["HR"].adoption_rate is None
-    assert rows["HR"].more_output_rate is None
-    assert rows["HR"].avg_hours_saved is None
-    assert rows["HR"].avg_hours_saved_denominator == 0
-    assert rows["HR"].frequent_rework_rate is None
-    assert rows["HR"].top_barrier is None
+    assert rows["director"].eligible_employees == 1
+    assert rows["director"].respondents == 0
+    assert rows["director"].adoption_rate is None
+    assert rows["director"].more_output_rate is None
+    assert rows["director"].avg_hours_saved is None
+    assert rows["director"].avg_hours_saved_denominator == 0
+    assert rows["director"].frequent_rework_rate is None
+    assert rows["director"].top_barrier is None
 
 
 def test_aggregate_level_group_breakdown_uses_level_labels(metric_employees, metric_responses):
-    metrics = aggregate(metric_employees, metric_responses, group_by="level")
+    metrics = aggregate(metric_employees, metric_responses)
     rows = {row.key: row for row in metrics.group_breakdown.rows}
 
     assert list(rows) == ["manager", "ic"]
@@ -288,12 +288,11 @@ def test_percentage_rounding_uses_half_up_ui_convention():
     assert pct(1, 8) == 13
 
 
-def aggregate(employees, responses, group_by="department"):
+def aggregate(employees, responses):
     return MetricsAggregator().aggregate(
         scope=ScopeDescriptor(type="org", id=None, name="Organization"),
         employees=employees,
         responses=responses,
-        group_by=group_by,
         criteria=Q3Q5Criteria(
             weekly_time_saved="more_than_5_hours",
             work_output_change="slightly_more",

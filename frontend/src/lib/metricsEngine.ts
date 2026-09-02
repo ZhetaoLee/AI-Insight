@@ -17,7 +17,6 @@ import type {
   DashboardMetricsResponse,
   DashboardScope,
   DistributionRow,
-  GroupByField,
   GroupBreakdown,
   GroupRow,
   OptionDistribution,
@@ -97,6 +96,11 @@ interface Resolved {
   record: DashboardRecord;
 }
 
+interface Selection {
+  option: string;
+  other_text: string | null;
+}
+
 function resolveRecords(pool: Employee[], recordsByEmployeeId: Map<string, DashboardRecord>): Resolved[] {
   return pool.map((employee) => ({ employee, record: recordsByEmployeeId.get(employee.id)! }));
 }
@@ -114,39 +118,10 @@ function optionDistribution(
   return { denominator: answered.length, rows };
 }
 
-function rankedOptionDistribution(
+function selectionDistribution(
   respondents: Resolved[],
   options: SurveyOption[],
-  selection: (r: Resolved) => { option: string; other_text: string | null } | null
-): OptionDistribution {
-  const answered = respondents.filter((r) => selection(r) !== null);
-  const counts = new Map<string, number>();
-  const otherTexts = new Map<string, Record<string, number>>();
-  for (const r of answered) {
-    const sel = selection(r)!;
-    counts.set(sel.option, (counts.get(sel.option) ?? 0) + 1);
-    if (sel.option === OTHER_CODE && sel.other_text) {
-      const bucket = otherTexts.get(sel.option) ?? {};
-      bucket[sel.other_text] = (bucket[sel.other_text] ?? 0) + 1;
-      otherTexts.set(sel.option, bucket);
-    }
-  }
-  const rows = options
-    .map((o) => ({
-      code: o.code,
-      label: o.label,
-      count: counts.get(o.code) ?? 0,
-      pct: pct(counts.get(o.code) ?? 0, answered.length),
-      otherTexts: otherTexts.get(o.code) ?? {},
-    }))
-    .sort((a, b) => b.count - a.count);
-  return { denominator: answered.length, rows };
-}
-
-function multiSelectDistribution(
-  respondents: Resolved[],
-  options: SurveyOption[],
-  selections: (r: Resolved) => { option: string; other_text: string | null }[]
+  selections: (r: Resolved) => Selection[]
 ): OptionDistribution {
   const answered = respondents.filter((r) => selections(r).length > 0);
   const counts = new Map<string, number>();
@@ -224,15 +199,12 @@ export function computeQ3Q5Analysis(respondents: Resolved[], criteria: Q3Q5Crite
   };
 }
 
-function computeGroupBreakdown(pool: Employee[], recordsByEmployeeId: Map<string, DashboardRecord>, groupBy: GroupByField): GroupBreakdown {
-  const groups =
-    groupBy === "department"
-      ? Array.from(new Set(pool.map((e) => e.department))).sort()
-      : (["senior_director", "director", "manager", "ic"] as const);
+const LEVEL_ORDER = ["senior_director", "director", "manager", "ic"] as const;
 
+function computeGroupBreakdown(pool: Employee[], recordsByEmployeeId: Map<string, DashboardRecord>): GroupBreakdown {
   const rows: GroupRow[] = [];
-  for (const key of groups) {
-    const members = pool.filter((e) => (groupBy === "department" ? e.department === key : e.level === key));
+  for (const key of LEVEL_ORDER) {
+    const members = pool.filter((employee) => employee.level === key);
     if (members.length === 0) continue;
     const resolved = resolveRecords(members, recordsByEmployeeId);
     const respondents = resolved.filter((r) => r.record.responded);
@@ -259,7 +231,7 @@ function computeGroupBreakdown(pool: Employee[], recordsByEmployeeId: Map<string
 
     rows.push({
       key,
-      label: groupBy === "department" ? key : LEVEL_LABELS[key as Employee["level"]],
+      label: LEVEL_LABELS[key],
       eligible_employees: members.length,
       respondents: respondents.length,
       adoption_rate: respondents.length ? pct(active.length, respondents.length) : null,
@@ -272,14 +244,13 @@ function computeGroupBreakdown(pool: Employee[], recordsByEmployeeId: Map<string
   }
 
   rows.sort((a, b) => (b.adoption_rate ?? -1) - (a.adoption_rate ?? -1));
-  return { group_by: groupBy, rows };
+  return { group_by: "level", rows };
 }
 
 export function computeDashboardMetrics(
   employees: Employee[],
   records: DashboardRecord[],
   scope: DashboardScope,
-  groupBy: GroupByField,
   q3Q5Criteria: Q3Q5Criteria
 ): DashboardMetricsResponse {
   const recordsByEmployeeId = new Map(records.map((r) => [r.employeeId, r]));
@@ -316,9 +287,12 @@ export function computeDashboardMetrics(
     work_quality: optionDistribution(respondents, QUALITY_CHANGE, (r) => r.record.answers!.quality_change),
     ai_rework_frequency: optionDistribution(respondents, CORRECTION_FREQUENCY, (r) => r.record.answers!.correction_frequency),
     q3_q5_analysis: computeQ3Q5Analysis(respondents, q3Q5Criteria),
-    benefits: rankedOptionDistribution(respondents, BIGGEST_BENEFIT, (r) => r.record.answers!.biggest_benefit),
-    barriers: multiSelectDistribution(respondents, BARRIERS, (r) => r.record.answers!.barriers),
-    group_breakdown: computeGroupBreakdown(pool, recordsByEmployeeId, groupBy),
+    benefits: selectionDistribution(respondents, BIGGEST_BENEFIT, (r) => {
+      const benefit = r.record.answers!.biggest_benefit;
+      return benefit ? [benefit] : [];
+    }),
+    barriers: selectionDistribution(respondents, BARRIERS, (r) => r.record.answers!.barriers),
+    group_breakdown: computeGroupBreakdown(pool, recordsByEmployeeId),
   };
 }
 

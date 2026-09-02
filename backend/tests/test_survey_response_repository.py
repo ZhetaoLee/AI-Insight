@@ -2,24 +2,9 @@ import pytest
 
 from app.models.survey_response import SurveyResponseSubmission
 from app.repositories.survey_responses import SurveyResponseRepository
-from helpers import project_document
+from helpers import FakeAsyncCursor, FakeUpdateResult, project_document
 
 pytestmark = pytest.mark.asyncio
-
-
-class FakeAsyncCursor:
-    def __init__(self, documents: list[dict]) -> None:
-        self._documents = documents
-
-    def __aiter__(self):
-        self._iterator = iter(self._documents)
-        return self
-
-    async def __anext__(self):
-        try:
-            return next(self._iterator)
-        except StopIteration as exc:
-            raise StopAsyncIteration from exc
 
 
 class FakeSurveyResponsesCollection:
@@ -76,12 +61,6 @@ class FakeSurveyResponsesCollection:
             self._documents.append(document)
         document.update(update.get("$set", {}))
         return FakeUpdateResult(matched_count=1 if matched else 0, upserted_id="fake_insert_id" if not matched else None)
-
-
-class FakeUpdateResult:
-    def __init__(self, matched_count: int, upserted_id: str | None) -> None:
-        self.matched_count = matched_count
-        self.upserted_id = upserted_id
 
 
 class FakeDb:

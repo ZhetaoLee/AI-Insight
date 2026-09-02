@@ -1,14 +1,12 @@
 import { useState } from "react";
-import type { GroupBreakdown, GroupByField } from "../../types/metrics";
+import type { GroupBreakdown } from "../../types/metrics";
 import { shortGroupLabel } from "../../lib/dashboardFormat";
 
 interface AdoptionChartProps {
   groupBreakdown: GroupBreakdown;
-  groupLabel: string;
-  onGroupByChange: (g: GroupByField) => void;
 }
 
-export function AdoptionChart({ groupBreakdown, groupLabel, onGroupByChange }: AdoptionChartProps) {
+export function AdoptionChart({ groupBreakdown }: AdoptionChartProps) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const rows = groupBreakdown.rows;
   const hovered = hoverIdx !== null ? rows[hoverIdx] : null;
@@ -20,7 +18,7 @@ export function AdoptionChart({ groupBreakdown, groupLabel, onGroupByChange }: A
   return (
     <div className="card chart-card">
       <div className="chart-card-head">
-        <div className="card-title">Adoption by {groupLabel}</div>
+        <div className="card-title">Adoption by level</div>
         <div className="chart-legend">
           <div className="legend-item">
             <div className="legend-dot" style={{ background: "#1f9d7c" }} />
@@ -29,18 +27,6 @@ export function AdoptionChart({ groupBreakdown, groupLabel, onGroupByChange }: A
           <div className="legend-item">
             <div className="legend-dot" style={{ background: "#bfe6d9" }} />
             Reports more output
-          </div>
-          <div className="toggle-group small">
-            {(["department", "level"] as GroupByField[]).map((g) => (
-              <button
-                key={g}
-                type="button"
-                className={groupBreakdown.group_by === g ? "toggle-btn active" : "toggle-btn"}
-                onClick={() => onGroupByChange(g)}
-              >
-                {g === "department" ? "Department" : "Level"}
-              </button>
-            ))}
           </div>
         </div>
       </div>

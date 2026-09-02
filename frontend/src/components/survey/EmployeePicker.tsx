@@ -14,12 +14,13 @@ export function EmployeePicker({ employees, loading, value, onChange, error }: E
 
   return (
     <div className="field">
-      <div className="field-label">
+      <label className="field-label" htmlFor="employee-picker">
         Your name
         <span className="required-mark">*</span>
         {error ? <span className="error-inline">Select your name</span> : null}
-      </div>
+      </label>
       <select
+        id="employee-picker"
         className="employee-select"
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}

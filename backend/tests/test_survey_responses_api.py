@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from app.config import Settings
 from app.db import get_database
 from app.routers import survey_responses
-from helpers import replace_nested
+from helpers import FakeUpdateResult, replace_nested
 
 
 class FakeEmployeesCollection:
@@ -41,11 +41,6 @@ class FakeSurveyResponsesCollection:
         document.update(update.get("$set", {}))
         self.documents[key] = document
         return FakeUpdateResult(upserted_id="fake_insert_id" if created else None)
-
-
-class FakeUpdateResult:
-    def __init__(self, upserted_id: str | None) -> None:
-        self.upserted_id = upserted_id
 
 
 class FakeDb:

@@ -1,3 +1,4 @@
+import { fetchJsonWithNetworkFallback } from "./http";
 import type { Employee } from "../types/employee";
 
 // ~10 seeded employees across multiple hierarchy branches, matching the
@@ -17,11 +18,5 @@ const SEED_EMPLOYEES: Employee[] = [
 ];
 
 export async function fetchEmployees(): Promise<Employee[]> {
-  try {
-    const res = await fetch("/api/employees");
-    if (!res.ok) throw new Error(`GET /api/employees failed: ${res.status}`);
-    return (await res.json()) as Employee[];
-  } catch {
-    return SEED_EMPLOYEES;
-  }
+  return fetchJsonWithNetworkFallback("/api/employees", () => SEED_EMPLOYEES, "GET /api/employees failed");
 }

@@ -34,8 +34,6 @@ export interface DashboardSeed {
   records: DashboardRecord[];
 }
 
-export const DEPARTMENTS = ["Engineering", "Product", "Operations", "Infrastructure", "Finance", "HR", "Other"];
-
 const Q3_HOURS: Record<string, number | null> = {
   no_noticeable_time_saved: 0,
   less_than_1_hour: 0.5,

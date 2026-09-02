@@ -7,7 +7,6 @@ from app.models.metrics import (
     DashboardMetricsResponse,
     DistributionRow,
     GroupBreakdown,
-    GroupByField,
     GroupRow,
     HeadlineMetrics,
     OptionDistribution,
@@ -121,7 +120,6 @@ class MetricsAggregator:
         scope: ScopeDescriptor,
         employees: Sequence[Employee],
         responses: Sequence[SurveyResponse],
-        group_by: GroupByField,
         criteria: Q3Q5Criteria,
     ) -> DashboardMetricsResponse:
         respondents = self._respondents(employees, responses)
@@ -186,7 +184,7 @@ class MetricsAggregator:
                 BARRIERS,
                 lambda response: [(barrier.option, barrier.other_text) for barrier in response.answers.barriers],
             ),
-            group_breakdown=self._group_breakdown(employees, responses, group_by),
+            group_breakdown=self._group_breakdown(employees, responses),
         )
 
     def _respondents(
@@ -283,13 +281,11 @@ class MetricsAggregator:
         self,
         employees: Sequence[Employee],
         responses: Sequence[SurveyResponse],
-        group_by: GroupByField,
     ) -> GroupBreakdown:
-        keys = sorted({employee.department for employee in employees}) if group_by == "department" else list(LEVEL_ORDER)
         rows: list[GroupRow] = []
 
-        for key in keys:
-            members = [employee for employee in employees if (employee.department if group_by == "department" else employee.level) == key]
+        for key in LEVEL_ORDER:
+            members = [employee for employee in employees if employee.level == key]
             if not members:
                 continue
             respondents = self._respondents(members, responses)
@@ -301,7 +297,7 @@ class MetricsAggregator:
             rows.append(
                 GroupRow(
                     key=key,
-                    label=key if group_by == "department" else LEVEL_LABELS[key],
+                    label=LEVEL_LABELS[key],
                     eligible_employees=len(members),
                     respondents=len(respondents),
                     adoption_rate=pct_or_none(len(active), len(respondents)),
@@ -314,7 +310,7 @@ class MetricsAggregator:
             )
 
         rows.sort(key=lambda row: row.adoption_rate if row.adoption_rate is not None else -1, reverse=True)
-        return GroupBreakdown(group_by=group_by, rows=rows)
+        return GroupBreakdown(group_by="level", rows=rows)
 
     def _top_barrier(self, respondents: Sequence[Respondent]) -> TopBarrier | None:
         counts: dict[str, int] = {}

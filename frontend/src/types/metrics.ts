@@ -95,8 +95,6 @@ export interface Q3Q5Analysis {
   matching_rate: number;
 }
 
-export type GroupByField = "department" | "level";
-
 export interface GroupRow {
   key: string;
   label: string;
@@ -111,7 +109,7 @@ export interface GroupRow {
 }
 
 export interface GroupBreakdown {
-  group_by: GroupByField;
+  group_by: "level";
   rows: GroupRow[];
 }
 
