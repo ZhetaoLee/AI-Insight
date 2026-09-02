@@ -1,7 +1,8 @@
 # Remove the "Q3 2026 survey" card at the dashboard sidebar's bottom
 
-- **Status:** Active
+- **Status:** Fixed
 - **Reported:** 2026-09-02
+- **Fixed:** 2026-09-02
 
 ## Summary
 
@@ -65,3 +66,39 @@ No test references `sidebar-coverage-card`, `coverage-card-title/sub/foot`, `cov
 3. **`frontend/src/pages/DashboardPage.css`** — remove the now-dead `.sidebar-coverage-card`, `.coverage-card-title`, `.coverage-card-sub`, `.coverage-bar-track`, `.coverage-bar-fill`, `.coverage-card-foot` rules (`DashboardPage.css:152-193`).
 
 No backend, database, or test changes needed. Worth a quick look at `bug/2026-09-02-hero-cards-redesign.md` alongside this one since both touch where coverage/response numbers surface on the dashboard.
+
+## Fix
+
+The sidebar coverage card was removed by the shared sidebar/navigation implementation. The current sidebar is shared app chrome with only two route links:
+
+- `Dashboard`
+- `Survey`
+
+Confirmed fixed in the current code:
+
+- `frontend/src/components/dashboard/DashboardSidebar.tsx` no longer accepts a `coverage` prop.
+- `frontend/src/components/dashboard/DashboardSidebar.tsx` no longer renders `Q3 2026 survey`.
+- `frontend/src/pages/DashboardPage.tsx` no longer passes `coverage={metrics.coverage}` to the sidebar.
+- `frontend/src/pages/DashboardPage.css` no longer contains `.sidebar-coverage-card`, `.coverage-card-title`, `.coverage-card-sub`, `.coverage-bar-track`, `.coverage-bar-fill`, or `.coverage-card-foot`.
+- `frontend/e2e/survey-dashboard.spec.ts` verifies `Q3 2026 survey` is absent from both `/survey` and `/dashboard`.
+- `frontend/tests/frontend.test.mjs` has source-level regression coverage that the sidebar no longer contains `coverage` or `Q3 2026 survey`.
+
+To preserve `docs/PRD.md` §13.2's requirement that response coverage remains visible, coverage now appears in the dashboard content area as `Response coverage`, not in the sidebar.
+
+No backend, database, `AGENTS.md`, or `CLAUDE.md` change was needed.
+
+## Verification
+
+Full local verification run on 2026-09-02:
+
+- `uv run pytest` — 91 passed
+- `npm test` — 16 passed
+- `npm run lint`
+- `npm run build`
+- `npm run test:e2e` — 1 Playwright test passed
+- `git diff --check`
+
+Local app verification:
+
+- Docker Compose is running with frontend, backend, and MongoDB healthy.
+- `/dashboard` and `/survey` are reachable locally.

@@ -1,5 +1,6 @@
 import { QUALITY_CHANGE, WEEKLY_TIME_SAVED, WORK_OUTPUT_CHANGE } from "../../types/survey";
 import type { Q3Q5Analysis, Q3Q5Criteria } from "../../types/metrics";
+import { InfoTooltip } from "./InfoTooltip";
 
 export const ANALYSIS_WEEKLY_TIME_SAVED = WEEKLY_TIME_SAVED.filter((option) => option.code !== "not_sure");
 
@@ -12,6 +13,8 @@ export function ComboAnalysisCard({ analysis, onChange }: ComboAnalysisCardProps
   const ratePct = Math.round(analysis.matching_rate * 100);
   const deg = Math.round(ratePct * 3.6);
   const note = 'Denominator excludes "Not sure" on Q3 and anyone missing an answer to Q3, Q4, or Q5.';
+  const helpText =
+    "Select one answer for time saved, output, and quality to see how often all three outcomes happen together.";
 
   const selectors = [
     { label: "Q3 · Weekly time saved", options: ANALYSIS_WEEKLY_TIME_SAVED, value: analysis.criteria.weekly_time_saved, key: "weekly_time_saved" as const },
@@ -21,9 +24,9 @@ export function ComboAnalysisCard({ analysis, onChange }: ComboAnalysisCardProps
 
   return (
     <div className="card combo-card">
-      <div>
-        <div className="card-title">Dynamic Q3–Q5 analysis</div>
-        <div className="card-eyebrow">Combine one option from each question</div>
+      <div className="combo-card-head">
+        <div className="card-title">Productivity payoff analysis</div>
+        <InfoTooltip label="Productivity payoff analysis help">{helpText}</InfoTooltip>
       </div>
       <div className="combo-selectors">
         {selectors.map((s) => (

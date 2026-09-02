@@ -12,7 +12,7 @@ export function AdoptionChart({ groupBreakdown }: AdoptionChartProps) {
   const hovered = hoverIdx !== null ? rows[hoverIdx] : null;
 
   const chartHint = hovered
-    ? `${hovered.label} · ${hovered.respondents} / ${hovered.eligible_employees} responses · adoption ${hovered.adoption_rate ?? 0}% · more output ${hovered.more_output_rate ?? 0}% · ${hovered.avg_hours_saved != null ? hovered.avg_hours_saved.toFixed(1) + " h" : "—"} avg saved`
+    ? `${hovered.label} · ${hovered.respondents} / ${hovered.eligible_employees} responses · adoption ${hovered.adoption_rate ?? 0}% · ${hovered.avg_hours_saved != null ? hovered.avg_hours_saved.toFixed(1) + " h" : "—"} avg saved`
     : "Hover a column for the full breakdown";
 
   return (
@@ -23,10 +23,6 @@ export function AdoptionChart({ groupBreakdown }: AdoptionChartProps) {
           <div className="legend-item">
             <div className="legend-dot" style={{ background: "#1f9d7c" }} />
             AI adoption rate
-          </div>
-          <div className="legend-item">
-            <div className="legend-dot" style={{ background: "#bfe6d9" }} />
-            Reports more output
           </div>
         </div>
       </div>
@@ -51,7 +47,6 @@ export function AdoptionChart({ groupBreakdown }: AdoptionChartProps) {
               >
                 <div className="bar-chart-bars">
                   <div style={{ background: "#1f9d7c", height: `${r.adoption_rate ?? 0}%`, opacity: op }} />
-                  <div style={{ background: "#bfe6d9", height: `${r.more_output_rate ?? 0}%`, opacity: op }} />
                 </div>
                 <div className="bar-chart-label" style={{ color: hoverIdx === idx ? "#1f2a37" : "#8b949e" }}>
                   {shortGroupLabel(r.label)}

@@ -1,4 +1,5 @@
 import type { DashboardMetricsResponse } from "../../types/metrics";
+import { InfoTooltip } from "./InfoTooltip";
 
 interface HeroDef {
   label: string;
@@ -36,12 +37,7 @@ export function HeroCards({ metrics }: HeroCardsProps) {
         <div key={hero.label} className="hero-card">
           <div className="hero-card-head">
             <div className="hero-label">{hero.label}</div>
-            <span className="hero-help" tabIndex={0} aria-label={hero.help}>
-              i
-              <span className="hero-tooltip" role="tooltip">
-                {hero.help}
-              </span>
-            </span>
+            <InfoTooltip label={`${hero.label} help`}>{hero.help}</InfoTooltip>
           </div>
           <div className="hero-value-row">
             <div className="hero-value">{hero.value}</div>

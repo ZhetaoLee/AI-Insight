@@ -284,8 +284,7 @@ test("dashboard hero cards show plain population counts without old card clutter
   assert.equal(heroCardsSource.includes('label: "Response rate"'), false);
   assert.equal(heroCardsSource.includes('label: "AI adoption rate"'), false);
   assert.equal(heroCardsSource.includes('label: "Avg weekly time saved"'), false);
-  assert.equal(heroCardsSource.includes("hero-help"), true);
-  assert.equal(heroCardsSource.includes("hero-tooltip"), true);
+  assert.equal(heroCardsSource.includes("InfoTooltip"), true);
   assert.equal(heroCardsSource.includes("hero-pill"), false);
   assert.equal(heroCardsSource.includes("hero-spark"), false);
   assert.equal(heroCardsSource.includes("hero-sub"), false);
@@ -294,6 +293,10 @@ test("dashboard hero cards show plain population counts without old card clutter
   assert.equal(dashboardStyles.includes("hero-spark"), false);
   assert.equal(dashboardStyles.includes("spark-bar"), false);
   assert.equal(dashboardStyles.includes("hero-sub"), false);
+  assert.equal(dashboardStyles.includes(".info-help"), true);
+  assert.equal(dashboardStyles.includes(".info-tooltip"), true);
+  assert.equal(dashboardStyles.includes(".hero-help"), false);
+  assert.equal(dashboardStyles.includes(".hero-tooltip"), false);
 });
 
 test("app navigation is a persistent dashboard and survey sidebar", async () => {
@@ -331,6 +334,41 @@ test("app navigation is a persistent dashboard and survey sidebar", async () => 
   assert.equal(dashboardStyles.includes(".dashboard-frame"), false);
   assert.equal(dashboardStyles.includes("sidebar-coverage-card"), false);
   assert.equal(surveyStyles.includes("min-height: 100vh"), false);
+});
+
+test("adoption by level chart shows only adoption bars without a nested scroll window", async () => {
+  const [adoptionChartSource, dashboardStyles] = await Promise.all([
+    readFile(new URL("../src/components/dashboard/AdoptionChart.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/DashboardPage.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(adoptionChartSource.includes("Reports more output"), false);
+  assert.equal(adoptionChartSource.includes("more output"), false);
+  assert.equal(adoptionChartSource.includes("more_output_rate"), false);
+  assert.equal(adoptionChartSource.includes("AI adoption rate"), true);
+  assert.equal(adoptionChartSource.includes("legend-dot"), true);
+
+  const chartAreaBlock = dashboardStyles.match(/\.bar-chart-area\s*\{[^}]*\}/)?.[0] ?? "";
+  const chartPlotBlock = dashboardStyles.match(/\.bar-chart-plot\s*\{[^}]*\}/)?.[0] ?? "";
+  const chartBarBlock = dashboardStyles.match(/\.bar-chart-bars > div\s*\{[^}]*\}/)?.[0] ?? "";
+  assert.equal(chartAreaBlock.includes("overflow-x: auto"), false);
+  assert.equal(chartPlotBlock.includes("min-width: 390px"), false);
+  assert.equal(chartBarBlock.includes("width: 26%"), false);
+});
+
+test("combo analysis card uses a leadership title and shared help tooltip", async () => {
+  const [comboCardSource, dashboardStyles] = await Promise.all([
+    readFile(new URL("../src/components/dashboard/ComboAnalysisCard.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/DashboardPage.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(comboCardSource.includes("Productivity payoff analysis"), true);
+  assert.equal(comboCardSource.includes("Dynamic Q3"), false);
+  assert.equal(comboCardSource.includes("Combine one option from each question"), false);
+  assert.equal(comboCardSource.includes("InfoTooltip"), true);
+  assert.equal(comboCardSource.includes("card-eyebrow"), false);
+  assert.equal(comboCardSource.includes("combo-card-head"), true);
+  assert.equal(dashboardStyles.includes(".combo-card-head"), true);
 });
 
 test("employee directory fallback is used only when the backend is unreachable", async () => {

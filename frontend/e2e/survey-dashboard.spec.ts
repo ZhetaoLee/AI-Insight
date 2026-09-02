@@ -54,10 +54,23 @@ test("employee survey submission is reflected in the executive dashboard", async
   await expect(page.getByText("Active AI Users", { exact: true })).toBeVisible();
   await expect(page.getByText("Response coverage", { exact: true })).toBeVisible();
   await expect(page.locator(".hero-card")).toHaveCount(3);
-  await expect(page.locator(".hero-help")).toHaveCount(3);
+  await expect(page.locator(".hero-card .info-help")).toHaveCount(3);
+  const adoptionChart = page.locator(".chart-card").filter({ hasText: "Adoption by level" });
+  await expect(adoptionChart.getByText("Reports more output", { exact: true })).toHaveCount(0);
+  await expect(adoptionChart.locator(".legend-item")).toHaveCount(1);
+  await expect(adoptionChart.locator(".bar-chart-bars > div")).toHaveCount(4);
+  const adoptionChartOverflows = await adoptionChart.locator(".bar-chart-area").evaluate((el) => el.scrollWidth > el.clientWidth);
+  expect(adoptionChartOverflows).toBeFalsy();
+  const comboCard = page.locator(".combo-card");
+  await expect(comboCard.getByText("Productivity payoff analysis", { exact: true })).toBeVisible();
+  await expect(comboCard.getByText("Dynamic Q3–Q5 analysis", { exact: true })).toHaveCount(0);
+  await expect(comboCard.getByText("Combine one option from each question", { exact: true })).toHaveCount(0);
+  await expect(comboCard.locator(".info-help")).toHaveCount(1);
 
-  await page.locator(".hero-help").first().hover();
-  await expect(page.locator(".hero-tooltip").first()).toHaveCSS("opacity", "1");
+  await page.locator(".hero-card .info-help").first().hover();
+  await expect(page.locator(".hero-card .info-tooltip").first()).toHaveCSS("opacity", "1");
+  await comboCard.locator(".info-help").hover();
+  await expect(comboCard.locator(".info-tooltip")).toHaveCSS("opacity", "1");
 
   await page.getByRole("link", { name: "Survey" }).click();
   await expect(page).toHaveURL(/\/survey$/);
