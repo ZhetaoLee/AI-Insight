@@ -16,7 +16,7 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 
 - Pytest, pytest-asyncio, and httpx test client support are configured.
 - Deterministic employee and response fixtures exist.
-- Tests cover exactly 10 seeded mock employees across Senior Director, Director, Manager, and IC levels.
+- Tests cover exactly 10 seeded mock employees across Senior Director, Director, Manager, and Individual Contributor levels.
 - Tests cover hierarchy traversal, manager subtree resolution, level filtering, hierarchy cycle protection, and active survey-cycle filtering.
 
 ## Plan 3: Survey Submission API [Complete]
@@ -43,7 +43,7 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 
 - `GET /api/metrics` is implemented test-first.
 - `scope=org`, `scope=manager&scope_id=...`, and `scope=level&scope_id=...` are supported.
-- `group_breakdown` is always grouped by `level` — department is not a supported grouping dimension for the initial version.
+- `group_breakdown` is always grouped by `level` — department is not part of the initial employee data model or a supported grouping dimension.
 - `q3`, `q4`, and `q5` query criteria default to `more_than_5_hours`, `slightly_more`, and `slightly_better`.
 - `q3=not_sure` returns `422` because `not_sure` is missing data.
 - The response is compatible with `frontend/src/types/metrics.ts`.

@@ -8,7 +8,7 @@ import {
   toggleBarrierSelection,
   validateSurveyForm,
 } from "../src/lib/surveyForm.ts";
-import { fetchEmployees } from "../src/api/employees.ts";
+import { SEED_EMPLOYEES, fetchEmployees } from "../src/api/employees.ts";
 import { fetchDashboardMetrics, fetchOrgDirectory } from "../src/api/metrics.ts";
 import { ANALYSIS_WEEKLY_TIME_SAVED } from "../src/components/dashboard/ComboAnalysisCard.tsx";
 import { resolveDashboardManagerId } from "../src/lib/dashboardScope.ts";
@@ -30,9 +30,9 @@ const validSurveyState = (overrides = {}) => ({
 });
 
 const dashboardEmployees = [
-  { id: "emp_101", name: "Priya Nair", department: "Engineering", level: "senior_director", manager_id: null },
-  { id: "emp_102", name: "Sarah Lee", department: "Engineering", level: "director", manager_id: "emp_101" },
-  { id: "emp_104", name: "Alice Chen", department: "Engineering", level: "ic", manager_id: "emp_102" },
+  { id: "emp_101", name: "Priya Nair", level: "senior_director", manager_id: null },
+  { id: "emp_102", name: "Sarah Lee", level: "director", manager_id: "emp_101" },
+  { id: "emp_104", name: "Alice Chen", level: "ic", manager_id: "emp_102" },
 ];
 
 test("survey validation requires every required field", () => {
@@ -228,7 +228,7 @@ test("dashboard metrics does not use local fallback for backend errors", async (
   );
 });
 
-test("dashboard manager selection keeps leaders and replaces stale or IC ids", () => {
+test("dashboard manager selection keeps leaders and replaces stale individual contributor ids", () => {
   assert.equal(resolveDashboardManagerId(dashboardEmployees, "emp_102"), "emp_102");
   assert.equal(resolveDashboardManagerId(dashboardEmployees, "emp_104"), "emp_101");
   assert.equal(resolveDashboardManagerId(dashboardEmployees, "d1"), "emp_101");
@@ -244,6 +244,17 @@ test("dashboard toolbar does not render a nonfunctional search placeholder", asy
   assert.equal(toolbarSource.includes("Search metric, team, or person"), false);
   assert.equal(toolbarSource.includes("toolbar-search"), false);
   assert.equal(dashboardStyles.includes("toolbar-search"), false);
+});
+
+test("employee data and selectors omit unsupported department context", async () => {
+  const [employeePickerSource, dashboardToolbarSource] = await Promise.all([
+    readFile(new URL("../src/components/survey/EmployeePicker.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/dashboard/DashboardToolbar.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(SEED_EMPLOYEES.some((employee) => Object.hasOwn(employee, "department")), false);
+  assert.equal(employeePickerSource.includes(".department"), false);
+  assert.equal(dashboardToolbarSource.includes(".department"), false);
 });
 
 test("employee directory fallback is used only when the backend is unreachable", async () => {

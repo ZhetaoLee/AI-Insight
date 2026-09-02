@@ -13,7 +13,7 @@ as a survey answer.
 - `senior_director`: Senior Director
 - `director`: Director
 - `manager`: Manager
-- `ic`: IC
+- `ic`: Individual Contributor
 
 ## Q1. AI Usage Frequency [Single Choice]
 

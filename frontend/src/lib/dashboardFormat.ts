@@ -4,7 +4,10 @@ export function abbreviate(name: string): string {
 }
 
 export function shortGroupLabel(label: string): string {
-  const overrides: Record<string, string> = { Infrastructure: "Infra.", "Senior Director": "Sr. Dir." };
+  const overrides: Record<string, string> = {
+    "Senior Director": "Sr. Dir.",
+    "Individual Contributor": "Ind. Contributor",
+  };
   return overrides[label] ?? label;
 }
 

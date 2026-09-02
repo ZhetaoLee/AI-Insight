@@ -31,7 +31,7 @@ LEVEL_LABELS = {
     "senior_director": "Senior Director",
     "director": "Director",
     "manager": "Manager",
-    "ic": "IC",
+    "ic": "Individual Contributor",
 }
 AI_USAGE_FREQUENCY: tuple[Option, ...] = (
     ("never", "Never"),

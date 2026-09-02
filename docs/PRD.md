@@ -39,7 +39,7 @@ Director
       ↓
 Manager
       ↓
-IC
+Individual Contributor
 ```
 
 Leadership currently lacks a systematic way to understand how AI affects employee productivity.
@@ -185,7 +185,7 @@ Your Name
 
 [Alice Chen ▼]
 
-IC
+Individual Contributor
 Manager: David Kim
 ```
 
@@ -370,7 +370,7 @@ All metrics are returned for one resolved scope:
 - `manager`: the selected manager and every descendant in that manager's subtree.
 - `level`: every employee with the requested level.
 
-Department is stored on employee records and shown as context, but it is not a required rolled-up metrics scope for the take-home build.
+Department is intentionally absent from this version's employee data model and is not a supported rolled-up metrics scope.
 
 ---
 
@@ -649,12 +649,12 @@ Leadership should be able to compare organizational groups.
 Example:
 
 ```text
-                Adoption   Avg Time Saved   Response Rate
+Level                   Adoption   Avg Time Saved   Response Rate
 
-Senior Director   100%        4.8h             100%
-Director          80%         4.1h             83%
-Manager           75%         3.7h             80%
-IC                67%         3.2h             70%
+Senior Director         100%       4.8h             100%
+Director                80%        4.1h             83%
+Manager                 75%        3.7h             80%
+Individual Contributor  67%        3.2h             70%
 ```
 
 ---
@@ -678,10 +678,10 @@ Organization
 returns all employees.
 
 ```text
-Level = IC
+Level = Individual Contributor (scope_id=ic)
 ```
 
-returns all IC responses.
+returns all Individual Contributor responses.
 
 ```text
 Manager = David Kim
@@ -702,7 +702,7 @@ Senior Director
       │
     Manager
       │
-	       IC
+Individual Contributor
 ```
 
 The seeded implementation must include exactly 10 employees. Use a realistic hierarchy with multiple branches, for example:
@@ -711,7 +711,7 @@ The seeded implementation must include exactly 10 employees. Use a realistic hie
 1 Senior Director
 2 Directors
 3 Managers
-4 ICs
+4 Individual Contributors
 ```
 
 Example:
@@ -722,16 +722,16 @@ Michael Wang — Senior Director
 ├── Sarah Lee — Director
 │   │
 │   ├── David Kim — Manager
-│   │   ├── Alice Chen — IC
-│   │   └── Bob Smith — IC
+│   │   ├── Alice Chen — Individual Contributor
+│   │   └── Bob Smith — Individual Contributor
 │   │
 │   └── Emily Zhang — Manager
-│       └── Chris Patel — IC
+│       └── Chris Patel — Individual Contributor
 │
 └── Priya Raman — Director
     │
     └── Noah Patel — Manager
-        └── Grace Liu — IC
+        └── Grace Liu — Individual Contributor
 ```
 
 If leadership selects Sarah Lee, metrics must include:
@@ -892,7 +892,6 @@ Core responsibilities:
 {
   "id": "emp_101",
   "name": "Alice Chen",
-  "department": "Engineering",
   "level": "ic",
   "manager_id": "emp_201"
 }
@@ -974,7 +973,6 @@ Example response item:
 {
   "id": "emp_101",
   "name": "Alice Chen",
-  "department": "Engineering",
   "level": "ic",
   "manager_id": "emp_201"
 }
@@ -1036,7 +1034,7 @@ q5         optional, default slightly_better
 
 The `q3=not_sure` criterion must return `422` because `not_sure` is missing data, not a numeric or analytical bucket.
 
-The backend must recompute all metrics from individual responses for the resolved scope. It should also return `group_breakdown` rows, grouped by `level`, so the dashboard can render comparison charts and tables without recomputing metric business logic. Department is display context on the Employee record only, not a supported grouping dimension for the initial version (see §7).
+The backend must recompute all metrics from individual responses for the resolved scope. It should also return `group_breakdown` rows, grouped by `level`, so the dashboard can render comparison charts and tables without recomputing metric business logic. Department is not part of this version's employee data model or a supported grouping dimension (see §7).
 
 ---
 
@@ -1144,7 +1142,7 @@ Example:
     "rows": [
       {
         "key": "ic",
-        "label": "IC",
+        "label": "Individual Contributor",
         "eligible_employees": 4,
         "respondents": 3,
         "adoption_rate": 67,

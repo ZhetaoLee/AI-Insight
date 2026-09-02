@@ -1,19 +1,20 @@
 # Department field still exists across dashboard, survey, backend, and seed data
 
-- **Status:** Active
+- **Status:** Fixed
 - **Reported:** 2026-09-01
+- **Fixed:** 2026-09-02
 
 ## Summary
 
-`department` is still a real field on the `Employee` model and shows up in multiple UI locations, even though it's not required for this version. Also flagging a related label inconsistency found while checking every "level" reference: the `ic` level shows as `"Individual Contributor"` in some places and `"IC"` in others.
+`department` was a real field on the `Employee` model and showed up in multiple UI locations, even though it was not required for this version. The same review also found a related label inconsistency: the `ic` level showed as `"Individual Contributor"` in some places and `"IC"` in others.
 
 ## Details
 
-Confirmed: both are real, and larger than the two department bugs already filed today.
+Confirmed: both were real, and larger than the two department bugs already filed today.
 
 This report explicitly asks for a full field removal ("no department field required for this version"), not just hiding a display — so it supersedes and subsumes `bug/2026-09-01-survey-employee-picker-shows-department.md` (that fix — remove the department line from `EmployeePicker.tsx` — is a subset of the work below; once this bug is fixed that one is fixed too and can be closed). `bug/fixed/2026-09-01-dashboard-department-grouping.md` (removing department as a `group_by` dimension) is a separate, already-fixed issue — this bug is about the field's existence, not grouping.
 
-### A. Where `department` still appears
+### A. Where `department` appeared
 
 **Dashboard**
 - `frontend/src/components/dashboard/DashboardToolbar.tsx:51` — the manager-scope `<select>` shows `{p.name} · {LEVEL_LABELS[p.level]} · {p.department} (...)`.
@@ -58,7 +59,7 @@ The user's message states the correct set is "Senior Director, Director, Manager
 
 Also worth checking once relabeled: `frontend/src/lib/dashboardFormat.ts`'s `shortGroupLabel` has a `"Senior Director" → "Sr. Dir."` abbreviation for chart x-axis space, but nothing for `"Individual Contributor"` (currently moot since the frontend already renders the long form there) — if the backend's `"IC"` becomes `"Individual Contributor"` too, the chart x-axis label will render the full 21-character string under a narrow bar column with no abbreviation, unlike the other three levels.
 
-## Files that need to change to fix this
+## Files changed to fix this
 
 **Remove `department` field:**
 1. `frontend/src/types/employee.ts` — drop `department` from `Employee`.
@@ -81,3 +82,39 @@ Also worth checking once relabeled: `frontend/src/lib/dashboardFormat.ts`'s `sho
 16. `frontend/src/lib/dashboardFormat.ts` — consider adding a `shortGroupLabel` abbreviation for `"Individual Contributor"` once it's the label everywhere, so the adoption chart's x-axis doesn't render the full-length string.
 
 **Supersedes:** `bug/2026-09-01-survey-employee-picker-shows-department.md` (its fix is item 3 above, a subset of this bug's scope).
+
+## Fix
+
+Removed `department` from the employee contract end-to-end:
+
+- **Frontend**: removed `department` from `Employee`, frontend seed employees, the survey employee context line, and the dashboard manager selector. Removed the dead `Infrastructure` chart-label override and added a short label for `Individual Contributor`.
+- **Backend**: removed `department` from the `Employee` model and seeded employee documents. `seed_employees()` now sends `$unset: {"department": ""}` on every seeded employee upsert so existing local MongoDB records drop stale department values automatically on startup.
+- **Docs**: updated `docs/PRD.md`, `docs/ADR.md`, `docs/Questions.md`, and `docs/metrics.md` so department is described as absent from this version's employee data model, not stored/displayed context.
+- **Local agent docs**: updated `CLAUDE.md` to match the new employee contract. `AGENTS.md` did not contain department-specific implementation guidance.
+- **Tests**: added regression coverage for seed documents, stale Mongo cleanup, `/api/employees` serialization, frontend seed data, and selector source references.
+
+The related `ic` label inconsistency was fixed at the same time: backend metrics now return `Individual Contributor`, matching the frontend and docs.
+
+## Verification
+
+Initial regression tests failed before the implementation:
+
+- `uv run pytest tests/test_seed.py tests/test_employees_api.py`
+- `npm test`
+
+After the implementation, targeted backend and frontend tests passed.
+
+Full local verification run on 2026-09-02:
+
+- `uv run pytest`
+- `npm test`
+- `npm run lint`
+- `npm run build`
+- `npm run test:e2e`
+- `git diff --check`
+
+Live stack verification:
+
+- `GET /api/employees` returns employee records with `id`, `name`, `level`, and `manager_id`; no `department` key is returned.
+- `GET /api/metrics?scope=level&scope_id=ic` returns scope name and group labels as `Individual Contributor`.
+- MongoDB check `db.employees.countDocuments({department: {$exists: true}})` returns `0`.

@@ -179,7 +179,7 @@ def test_get_metrics_supports_level_scope(metrics_api_client):
 
     assert response.status_code == 200
     body = response.json()
-    assert body["scope"] == {"type": "level", "id": "ic", "name": "IC"}
+    assert body["scope"] == {"type": "level", "id": "ic", "name": "Individual Contributor"}
     assert body["coverage"]["eligible_employees"] == 4
     assert body["coverage"]["respondents"] == 2
     assert body["group_breakdown"]["group_by"] == "level"

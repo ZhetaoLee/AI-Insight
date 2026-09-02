@@ -43,7 +43,7 @@ export function DashboardToolbar({
         <select className="toolbar-picker" value={managerId} onChange={(e) => onManagerChange(e.target.value)}>
           {leaders.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.name} · {LEVEL_LABELS[p.level]} · {p.department} ({subtreeOf(orgEmployees, p.id).length - 1} reports)
+              {p.name} · {LEVEL_LABELS[p.level]} ({subtreeOf(orgEmployees, p.id).length - 1} reports)
             </option>
           ))}
         </select>

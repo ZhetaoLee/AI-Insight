@@ -204,7 +204,7 @@ def test_aggregate_group_breakdown_recomputes_group_metrics(metric_employees, me
 def test_group_breakdown_group_without_respondents_returns_null_rates(metric_employees, metric_responses):
     employees = [
         *metric_employees,
-        Employee(id="emp_206", name="No Response", department="HR", level="director", manager_id=None),
+        Employee(id="emp_206", name="No Response", level="director", manager_id=None),
     ]
 
     metrics = aggregate(employees, metric_responses)
@@ -228,7 +228,7 @@ def test_aggregate_level_group_breakdown_uses_level_labels(metric_employees, met
     assert rows["manager"].label == "Manager"
     assert rows["manager"].eligible_employees == 1
     assert rows["manager"].respondents == 1
-    assert rows["ic"].label == "IC"
+    assert rows["ic"].label == "Individual Contributor"
     assert rows["ic"].eligible_employees == 4
     assert rows["ic"].respondents == 3
 
@@ -304,11 +304,11 @@ def aggregate(employees, responses):
 @pytest.fixture
 def metric_employees() -> list[Employee]:
     return [
-        Employee(id="emp_201", name="Maya Singh", department="Engineering", level="manager", manager_id=None),
-        Employee(id="emp_202", name="Theo Grant", department="Engineering", level="ic", manager_id="emp_201"),
-        Employee(id="emp_203", name="Lina Park", department="Engineering", level="ic", manager_id="emp_201"),
-        Employee(id="emp_204", name="Iris Chen", department="Product", level="ic", manager_id=None),
-        Employee(id="emp_205", name="Jon Bell", department="Product", level="ic", manager_id=None),
+        Employee(id="emp_201", name="Maya Singh", level="manager", manager_id=None),
+        Employee(id="emp_202", name="Theo Grant", level="ic", manager_id="emp_201"),
+        Employee(id="emp_203", name="Lina Park", level="ic", manager_id="emp_201"),
+        Employee(id="emp_204", name="Iris Chen", level="ic", manager_id=None),
+        Employee(id="emp_205", name="Jon Bell", level="ic", manager_id=None),
     ]
 
 

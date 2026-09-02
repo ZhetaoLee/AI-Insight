@@ -29,6 +29,7 @@ def test_seed_employees_have_required_plan_one_shape():
     assert len(SEED_EMPLOYEES) == 10
     assert len(employee_ids) == 10
     assert manager_ids.issubset(employee_ids)
+    assert all("department" not in employee for employee in SEED_EMPLOYEES)
     assert all(employee["id"] != employee["manager_id"] for employee in SEED_EMPLOYEES)
     assert level_counts == EXPECTED_LEVEL_COUNTS
 

@@ -1,15 +1,16 @@
 # Survey employee picker still shows department
 
-- **Status:** Active
+- **Status:** Fixed
 - **Reported:** 2026-09-01
+- **Fixed:** 2026-09-02
 
 ## Summary
 
-After selecting a name in the survey's "Your name" picker, the department is displayed alongside level and manager, even though department is not considered part of the first version of the project.
+After selecting a name in the survey's "Your name" picker, the department was displayed alongside level and manager, even though department is not considered part of the first version of the project.
 
 ## Details
 
-Confirmed: this is a real bug, not a misunderstanding.
+Confirmed: this was a real bug, not a misunderstanding.
 
 `frontend/src/components/survey/EmployeePicker.tsx:38-43` renders:
 
@@ -22,7 +23,7 @@ Confirmed: this is a real bug, not a misunderstanding.
 ) : null}
 ```
 
-So the moment an employee is selected, the context line reads e.g. **"Engineering · IC · Manager: David Kim"** — department is the first, bolded thing shown.
+Before the fix, the moment an employee was selected, the context line read e.g. **"Engineering · IC · Manager: David Kim"** — department was the first, bolded thing shown.
 
 ### What the docs actually specify
 
@@ -64,3 +65,14 @@ So the moment an employee is selected, the context line reads e.g. **"Engineerin
 ## Notes
 
 The stale frontend test calls with a `groupBy` positional argument were fixed before this bug tracker was made public. `frontend/tests/frontend.test.mjs` now calls `fetchDashboardMetrics(scope, q3Q5Criteria)`.
+
+## Fix
+
+Fixed as part of `bug/fixed/2026-09-01-department-field-should-be-removed.md`.
+
+- `frontend/src/components/survey/EmployeePicker.tsx` now renders the selected employee's level and manager only.
+- `department` was also removed from the frontend `Employee` type, frontend seed data, backend `Employee` model, backend seed data, and `/api/employees` response contract.
+- Regression coverage was added in `frontend/tests/frontend.test.mjs`.
+- Playwright now asserts the selected employee context includes `Individual Contributor` and does not include `Engineering`.
+
+The older scope notes above are historical; the current implementation no longer treats `department` as a legitimate Employee attribute for this version.

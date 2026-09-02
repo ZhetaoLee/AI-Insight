@@ -37,7 +37,7 @@ export function EmployeePicker({ employees, loading, value, onChange, error }: E
       </select>
       {selected ? (
         <div className="employee-context">
-          <strong>{selected.department}</strong> · {LEVEL_LABELS[selected.level]}
+          <strong>{LEVEL_LABELS[selected.level]}</strong>
           {manager ? <>{" "}· Manager: {manager.name}</> : null}
         </div>
       ) : null}

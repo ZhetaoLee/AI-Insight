@@ -71,9 +71,9 @@ async def test_scope_resolver_rejects_unknown_scope_type(seed_scope_resolver):
 
 async def test_hierarchy_traversal_protects_against_cycles():
     employees = [
-        Employee(id="emp_a", name="A", department="Engineering", level="manager", manager_id="emp_c"),
-        Employee(id="emp_b", name="B", department="Engineering", level="manager", manager_id="emp_a"),
-        Employee(id="emp_c", name="C", department="Engineering", level="manager", manager_id="emp_b"),
+        Employee(id="emp_a", name="A", level="manager", manager_id="emp_c"),
+        Employee(id="emp_b", name="B", level="manager", manager_id="emp_a"),
+        Employee(id="emp_c", name="C", level="manager", manager_id="emp_b"),
     ]
     hierarchy = HierarchyService(InMemoryEmployeeRepository(employees))
 

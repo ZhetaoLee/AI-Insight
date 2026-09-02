@@ -6,8 +6,7 @@ from app.models.employee import EmployeeLevel
 from app.models.survey_response import QualityChange, WorkOutputChange
 
 ScopeType = Literal["org", "manager", "level"]
-# Department lives on the Employee record as display context only — it is not
-# a supported dashboard grouping dimension (see docs/ADR.md and docs/PRD.md).
+# Department is intentionally absent from this version's employee contract.
 # Level is the only group_breakdown dimension.
 GroupByField = Literal["level"]
 AnalysisWeeklyTimeSaved = Literal["no_noticeable_time_saved", "less_than_1_hour", "1_5_hours", "more_than_5_hours"]

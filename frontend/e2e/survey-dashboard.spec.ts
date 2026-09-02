@@ -4,6 +4,9 @@ test("employee survey submission is reflected in the executive dashboard", async
   await page.goto("/survey");
 
   await page.getByLabel("Your name").selectOption("emp_104");
+  await expect(page.locator(".employee-context")).toContainText("Individual Contributor");
+  await expect(page.locator(".employee-context")).not.toContainText("Engineering");
+
   await page.getByRole("button", { name: "Daily" }).click();
   await page.getByRole("button", { name: "Implementation" }).click();
   await page.getByRole("button", { name: "Research" }).click();

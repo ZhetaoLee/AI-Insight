@@ -20,7 +20,7 @@ The application must support:
 
 - A real organizational context of approximately 50 employees.
 - A realistic organizational hierarchy.
-- Senior Director → Director → Manager → IC relationships.
+- Senior Director → Director → Manager → Individual Contributor relationships.
 - Multiple organizational branches.
 - Survey submission.
 - Organization-wide aggregation.
@@ -31,7 +31,7 @@ The application must support:
 
 The system must remain simple enough for a take-home project while demonstrating correct architectural separation, maintainability, and analytical correctness.
 
-The seeded dataset intentionally represents a smaller sample of the real organization. It must still include every level and enough branching to verify IC → Manager → Director → Senior Director → org-wide aggregation.
+The seeded dataset intentionally represents a smaller sample of the real organization. It must still include every level and enough branching to verify Individual Contributor → Manager → Director → Senior Director → org-wide aggregation.
 
 A particularly important requirement is:
 
@@ -243,11 +243,11 @@ MongoDB therefore provides an appropriate tradeoff.
 
 ---
 
-# 6. Decision 4 — Organizational Attributes Belong to Employee Records
+# 6. Decision 4 — Organizational Context Belongs to Employee Records
 
 ## Decision
 
-Department, level, and manager will be stored in the employee collection rather than submitted as survey answers.
+Level and manager will be stored in the employee collection rather than submitted as survey answers. Department is intentionally absent from this version's employee data model.
 
 Employee:
 
@@ -255,7 +255,6 @@ Employee:
 {
   "id": "emp_101",
   "name": "Alice Chen",
-  "department": "Engineering",
   "level": "ic",
   "manager_id": "emp_201"
 }
@@ -277,19 +276,9 @@ Survey:
 Director
 ```
 
-or:
-
-```text
-Employee record:
-Engineering
-
-Survey:
-Product
-```
-
 The survey form therefore only asks the user to select their identity.
 
-The frontend may display department, level, and manager as read-only context.
+The frontend may display level and manager as read-only context.
 
 ---
 
@@ -486,11 +475,11 @@ org
 manager = David Kim
 → David + every descendant
 
-level = IC
-→ every IC
+level = Individual Contributor (scope_id=ic)
+→ every Individual Contributor
 ```
 
-Department remains an employee attribute and can be shown as context, but it is not a required metrics scope for the take-home API.
+Department is not part of this version's employee data model or a required metrics scope for the take-home API.
 
 ---
 
@@ -582,7 +571,7 @@ Metric calculation
 not:
 
 ```text
-IC metric
+Individual Contributor metric
    ↓
 Manager metric
    ↓
@@ -1015,7 +1004,7 @@ q4         optional, default slightly_more
 q5         optional, default slightly_better
 ```
 
-`group_breakdown` is always grouped by `level`. Department lives on the Employee record as display context only — it is not a supported dashboard grouping dimension for the initial version.
+`group_breakdown` is always grouped by `level`. Department is intentionally absent from this version's employee data model and is not a supported dashboard grouping dimension.
 
 The API must return `422` for `q3=not_sure` because `not_sure` is missing data and is excluded from numeric and criteria-based analysis.
 
@@ -1127,7 +1116,7 @@ Other free-text handling
 Test:
 
 ```text
-IC
+Individual Contributor
 Manager
 Director
 Senior Director

@@ -43,9 +43,9 @@ class FakeScopeResolver:
 
 async def test_get_metrics_uses_resolved_employee_scope_for_population_and_response_query():
     employees = [
-        employee("emp_201", "Maya Singh", "Engineering", "manager"),
-        employee("emp_202", "Theo Grant", "Engineering", "ic", "emp_201"),
-        employee("emp_203", "Outside User", "Product", "ic"),
+        employee("emp_201", "Maya Singh", "manager"),
+        employee("emp_202", "Theo Grant", "ic", "emp_201"),
+        employee("emp_203", "Outside User", "ic"),
     ]
     response_repository = FakeResponseRepository(
         [
@@ -77,8 +77,8 @@ async def test_get_metrics_uses_resolved_employee_scope_for_population_and_respo
 
 async def test_get_metrics_describes_level_scope_with_human_label():
     employees = [
-        employee("emp_201", "Maya Singh", "Engineering", "manager"),
-        employee("emp_202", "Theo Grant", "Engineering", "ic", "emp_201"),
+        employee("emp_201", "Maya Singh", "manager"),
+        employee("emp_202", "Theo Grant", "ic", "emp_201"),
     ]
     service = MetricsService(
         employee_repository=FakeEmployeeRepository(employees),
@@ -93,14 +93,14 @@ async def test_get_metrics_describes_level_scope_with_human_label():
         criteria=criteria(),
     )
 
-    assert metrics.scope.model_dump() == {"type": "level", "id": "ic", "name": "IC"}
+    assert metrics.scope.model_dump() == {"type": "level", "id": "ic", "name": "Individual Contributor"}
     assert metrics.coverage.eligible_employees == 1
 
 
 async def test_get_metrics_rejects_unknown_manager_before_loading_responses():
     response_repository = FakeResponseRepository([survey_response_document("resp_202", "emp_202", "2026-h2")])
     service = MetricsService(
-        employee_repository=FakeEmployeeRepository([employee("emp_202", "Theo Grant", "Engineering", "ic")]),
+        employee_repository=FakeEmployeeRepository([employee("emp_202", "Theo Grant", "ic")]),
         response_repository=response_repository,
         scope_resolver=FakeScopeResolver(["emp_202"]),
         metrics_aggregator=MetricsAggregator(),
@@ -119,7 +119,7 @@ async def test_get_metrics_rejects_unknown_manager_before_loading_responses():
 async def test_get_metrics_rejects_individual_contributor_manager_scope():
     response_repository = FakeResponseRepository([survey_response_document("resp_202", "emp_202", "2026-h2")])
     service = MetricsService(
-        employee_repository=FakeEmployeeRepository([employee("emp_202", "Theo Grant", "Engineering", "ic")]),
+        employee_repository=FakeEmployeeRepository([employee("emp_202", "Theo Grant", "ic")]),
         response_repository=response_repository,
         scope_resolver=FakeScopeResolver(["emp_202"]),
         metrics_aggregator=MetricsAggregator(),
@@ -138,7 +138,7 @@ async def test_get_metrics_rejects_individual_contributor_manager_scope():
 async def test_get_metrics_rejects_unknown_level_before_loading_responses():
     response_repository = FakeResponseRepository([survey_response_document("resp_202", "emp_202", "2026-h2")])
     service = MetricsService(
-        employee_repository=FakeEmployeeRepository([employee("emp_202", "Theo Grant", "Engineering", "ic")]),
+        employee_repository=FakeEmployeeRepository([employee("emp_202", "Theo Grant", "ic")]),
         response_repository=response_repository,
         scope_resolver=FakeScopeResolver(["emp_202"]),
         metrics_aggregator=MetricsAggregator(),
@@ -158,7 +158,7 @@ async def test_get_metrics_rejects_invalid_persisted_response_document():
     invalid_document = survey_response_document("resp_202", "emp_202", "2026-h2")
     invalid_document["answers"]["weekly_time_saved"] = "impossible_value"
     service = MetricsService(
-        employee_repository=FakeEmployeeRepository([employee("emp_202", "Theo Grant", "Engineering", "ic")]),
+        employee_repository=FakeEmployeeRepository([employee("emp_202", "Theo Grant", "ic")]),
         response_repository=FakeResponseRepository([invalid_document]),
         scope_resolver=FakeScopeResolver(["emp_202"]),
         metrics_aggregator=MetricsAggregator(),
@@ -175,11 +175,10 @@ async def test_get_metrics_rejects_invalid_persisted_response_document():
 def employee(
     employee_id: str,
     name: str,
-    department: str,
     level: str,
     manager_id: str | None = None,
 ) -> Employee:
-    return Employee(id=employee_id, name=name, department=department, level=level, manager_id=manager_id)
+    return Employee(id=employee_id, name=name, level=level, manager_id=manager_id)
 
 
 def criteria() -> Q3Q5Criteria:
