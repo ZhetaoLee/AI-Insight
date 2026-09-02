@@ -16,8 +16,6 @@ import type { DashboardMetricsResponse, DashboardScope, Q3Q5Criteria } from "../
 import { NO_MAJOR_BARRIERS_CODE } from "../types/survey";
 import "./DashboardPage.css";
 
-const SMALL_SAMPLE_THRESHOLD = 8;
-
 const HERO_PICK: Record<NavSection, number[]> = {
   Dashboard: [],
   Adoption: [1],
@@ -111,7 +109,6 @@ export function DashboardPage() {
       : scopeType === "manager"
         ? `Manager scope: ${managerName} plus all descendants, resolved to individual responses.`
         : `Level scope: all employees at ${LEVEL_LABELS[level]}, resolved to individual responses.`;
-  const tooFew = metrics.population.respondents > 0 && metrics.population.respondents < SMALL_SAMPLE_THRESHOLD;
 
   return (
     <div className="dashboard-shell">
@@ -145,13 +142,7 @@ export function DashboardPage() {
               </button>
             </div>
 
-            {tooFew && (
-              <div className="small-sample-banner">
-                Small sample: {metrics.population.respondents} respondents in this scope. Rates are directional only.
-              </div>
-            )}
-
-            {metricsError && <div className="small-sample-banner">{metricsError}</div>}
+            {metricsError && <div className="dashboard-banner">{metricsError}</div>}
 
             {show.heroes && <HeroCards metrics={metrics} visibleIndices={all ? "all" : heroIndices} />}
 

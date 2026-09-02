@@ -303,7 +303,7 @@
   background: #f2f4f5;
 }
 
-.small-sample-banner {
+.dashboard-banner {
   padding: 13px 16px;
   border-radius: 12px;
   background: var(--db-warn-bg);

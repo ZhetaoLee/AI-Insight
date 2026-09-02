@@ -257,6 +257,19 @@ test("employee data and selectors omit unsupported department context", async ()
   assert.equal(dashboardToolbarSource.includes(".department"), false);
 });
 
+test("dashboard does not render an unsupported small-sample warning", async () => {
+  const [dashboardPageSource, dashboardStyles] = await Promise.all([
+    readFile(new URL("../src/pages/DashboardPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/DashboardPage.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(dashboardPageSource.includes("SMALL_SAMPLE_THRESHOLD"), false);
+  assert.equal(dashboardPageSource.includes("tooFew"), false);
+  assert.equal(dashboardPageSource.includes("Small sample:"), false);
+  assert.equal(dashboardPageSource.includes("Rates are directional only"), false);
+  assert.equal(dashboardStyles.includes("small-sample-banner"), false);
+});
+
 test("employee directory fallback is used only when the backend is unreachable", async () => {
   await withMockFetch(
     async () => {

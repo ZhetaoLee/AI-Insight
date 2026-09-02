@@ -30,6 +30,8 @@ test("employee survey submission is reflected in the executive dashboard", async
   await page.getByRole("link", { name: "Dashboard" }).click();
 
   await expect(page.getByText("Executive overview")).toBeVisible();
+  await expect(page.getByText(/Small sample:/)).toHaveCount(0);
+  await expect(page.getByText(/Rates are directional only/)).toHaveCount(0);
   await expect(page.getByText("Response rate", { exact: true })).toBeVisible();
   await expect(page.getByText("AI adoption rate", { exact: true }).first()).toBeVisible();
 });

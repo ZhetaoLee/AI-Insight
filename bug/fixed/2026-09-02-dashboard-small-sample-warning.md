@@ -1,7 +1,8 @@
 # Dashboard shows an undocumented "small sample" warning banner
 
-- **Status:** Active
+- **Status:** Fixed
 - **Reported:** 2026-09-02
+- **Fixed:** 2026-09-02
 
 ## Summary
 
@@ -71,4 +72,37 @@ That error banner is a legitimate, separate feature and should stay. So the fix 
 1. **`frontend/src/pages/DashboardPage.tsx`** — remove the `SMALL_SAMPLE_THRESHOLD` constant (line 19), the `tooFew` computation (line 114), and the conditional banner block (lines 148-152). Leave the `metricsError` banner (line 154) and its `.small-sample-banner` class usage intact.
 2. **`frontend/src/pages/DashboardPage.css`** — no removal needed (the class stays in use for the error banner); optional rename of `.small-sample-banner` for clarity now that it's error-only, purely cosmetic to the codebase.
 
-No backend, database, or test changes needed — this was frontend-only, undocumented, and untested.
+## Fix
+
+Removed the unsupported dashboard small-sample warning instead of adding a new dashboard reliability feature that is not specified in the public product docs.
+
+- `frontend/src/pages/DashboardPage.tsx`: removed `SMALL_SAMPLE_THRESHOLD`, the `tooFew` calculation, and the conditional small-sample warning block.
+- `frontend/src/pages/DashboardPage.tsx`: kept the real metrics error banner.
+- `frontend/src/pages/DashboardPage.css`: renamed the remaining banner class from `.small-sample-banner` to `.dashboard-banner` so the styling no longer describes a removed feature.
+- `frontend/tests/frontend.test.mjs`: added a regression test that rejects the old small-sample warning constant, copy, state variable, and CSS class in dashboard source.
+- `frontend/e2e/survey-dashboard.spec.ts`: added runtime assertions that the dashboard does not show `Small sample:` or `Rates are directional only` during the smoke flow.
+
+No backend or database change was needed because this was a frontend-only display issue. No `/docs`, `AGENTS.md`, or `CLAUDE.md` content change was needed because none of them require or describe the removed warning.
+
+## Verification
+
+Initial regression test failed before the implementation:
+
+- `npm test`
+
+After the implementation, local frontend regression testing passed.
+
+Full local verification run on 2026-09-02:
+
+- `uv run pytest`
+- `npm test`
+- `npm run lint`
+- `npm run build`
+- `npm run test:e2e`
+- `git diff --check`
+
+Live stack verification:
+
+- Docker Compose stack started successfully with MongoDB, backend, and frontend healthy.
+- Playwright verified the dashboard does not show `Small sample:` or `Rates are directional only` in the survey-to-dashboard smoke flow.
+- The app is available for manual verification at `http://localhost:5173`.
