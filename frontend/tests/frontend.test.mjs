@@ -10,6 +10,7 @@ import {
 } from "../src/lib/surveyForm.ts";
 import { SEED_EMPLOYEES, fetchEmployees } from "../src/api/employees.ts";
 import { fetchDashboardMetrics, fetchOrgDirectory } from "../src/api/metrics.ts";
+import { fetchSubmittedEmployeeIds, submitSurveyResponse } from "../src/api/survey.ts";
 import { ANALYSIS_WEEKLY_TIME_SAVED } from "../src/components/dashboard/ComboAnalysisCard.tsx";
 import { resolveDashboardManagerId } from "../src/lib/dashboardScope.ts";
 
@@ -257,6 +258,69 @@ test("employee data and selectors omit unsupported department context", async ()
   assert.equal(dashboardToolbarSource.includes(".department"), false);
 });
 
+test("survey page filters employees who already submitted this cycle", async () => {
+  const [surveyPageSource, employeePickerSource] = await Promise.all([
+    readFile(new URL("../src/pages/SurveyPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/survey/EmployeePicker.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(surveyPageSource.includes("fetchSubmittedEmployeeIds"), true);
+  assert.equal(surveyPageSource.includes("submittedEmployeeIds"), true);
+  assert.equal(surveyPageSource.includes("availableEmployees"), true);
+  assert.equal(surveyPageSource.includes("employees={availableEmployees}"), true);
+  assert.equal(employeePickerSource.includes("No employees remaining"), true);
+});
+
+test("survey submitted employee status uses backend data and local fallback", async () => {
+  await withMockFetch(
+    async (url) => {
+      assert.equal(url, "/api/survey-responses/submitted-employee-ids");
+      return jsonResponse({ employee_ids: ["emp_104", "emp_105"] });
+    },
+    async () => assert.deepEqual(await fetchSubmittedEmployeeIds(), ["emp_104", "emp_105"])
+  );
+
+  await withLocalStorage(
+    {
+      demo_survey_responses: JSON.stringify({
+        emp_104: { submitted_at: "2026-09-02T12:00:00.000Z" },
+        emp_105: { submitted_at: "2026-09-02T12:01:00.000Z" },
+      }),
+    },
+    async () =>
+      withMockFetch(
+        async () => {
+          throw new TypeError("network unavailable");
+        },
+        async () => assert.deepEqual(await fetchSubmittedEmployeeIds(), ["emp_104", "emp_105"])
+      )
+  );
+
+  await withMockFetch(
+    async () => new Response("server error", { status: 500 }),
+    () => assert.rejects(() => fetchSubmittedEmployeeIds(), /GET \/api\/survey-responses\/submitted-employee-ids failed: 500/)
+  );
+});
+
+test("local survey fallback rejects duplicate employee submissions", async () => {
+  await withLocalStorage({}, async (storage) => {
+    await withMockFetch(
+      async () => {
+        throw new TypeError("network unavailable");
+      },
+      async () => {
+        await submitSurveyResponse(buildSurveyResponseSubmission(validSurveyState()));
+        await assert.rejects(
+          () => submitSurveyResponse(buildSurveyResponseSubmission(validSurveyState())),
+          /already submitted/
+        );
+      }
+    );
+
+    assert.deepEqual(Object.keys(JSON.parse(storage.demo_survey_responses)), ["emp_104"]);
+  });
+});
+
 test("frontend employee fallback uses adjacent management levels", () => {
   const expectedManagerLevelByLevel = {
     senior_director: null,
@@ -400,6 +464,24 @@ test("combo analysis card uses a leadership title and shared help tooltip", asyn
   assert.equal(dashboardStyles.includes(".combo-card-head"), true);
 });
 
+test("value area ranking card uses contextual help and row-level rank details", async () => {
+  const [valueAreaSource, dashboardStyles] = await Promise.all([
+    readFile(new URL("../src/components/dashboard/ValueAreaRankingCard.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/DashboardPage.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(valueAreaSource.includes("InfoTooltip"), true);
+  assert.equal(valueAreaSource.includes("card-eyebrow"), false);
+  assert.equal(valueAreaSource.includes("card-hint"), false);
+  assert.equal(valueAreaSource.includes("rank 1:"), false);
+  assert.equal(valueAreaSource.includes("rank 2:"), false);
+  assert.equal(valueAreaSource.includes("rank 3:"), false);
+  assert.equal(valueAreaSource.includes("value-area-tooltip"), true);
+  assert.equal(valueAreaSource.includes("rank-count-chip"), true);
+  assert.equal(dashboardStyles.includes(".value-area-tooltip"), true);
+  assert.equal(dashboardStyles.includes(".rank-count-chip"), true);
+});
+
 test("distribution panels use clear titles help tooltips and fact-based footers", async () => {
   const panelsSource = await readFile(new URL("../src/components/dashboard/DistributionPanels.tsx", import.meta.url), "utf8");
 
@@ -498,6 +580,35 @@ async function withMockFetch(mockFetch, run) {
     return await run();
   } finally {
     globalThis.fetch = originalFetch;
+  }
+}
+
+async function withLocalStorage(initialValues, run) {
+  const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
+  const storage = { ...initialValues };
+  Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    value: {
+      getItem(key) {
+        return Object.hasOwn(storage, key) ? storage[key] : null;
+      },
+      setItem(key, value) {
+        storage[key] = String(value);
+      },
+      removeItem(key) {
+        delete storage[key];
+      },
+    },
+  });
+
+  try {
+    return await run(storage);
+  } finally {
+    if (originalDescriptor === undefined) {
+      delete globalThis.localStorage;
+    } else {
+      Object.defineProperty(globalThis, "localStorage", originalDescriptor);
+    }
   }
 }
 

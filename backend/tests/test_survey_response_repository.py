@@ -1,8 +1,9 @@
 import pytest
+from pymongo.errors import DuplicateKeyError
 
 from app.models.survey_response import SurveyResponseSubmission
-from app.repositories.survey_responses import SurveyResponseRepository
-from helpers import FakeAsyncCursor, FakeUpdateResult, project_document
+from app.repositories.survey_responses import SurveyResponseAlreadyExistsError, SurveyResponseRepository
+from helpers import FakeAsyncCursor, project_document
 
 pytestmark = pytest.mark.asyncio
 
@@ -16,12 +17,12 @@ class FakeSurveyResponsesCollection:
 
     def find(self, query: dict, projection: dict) -> FakeAsyncCursor:
         self.find_calls.append((query, projection))
-        employee_ids = set(query["employee_id"]["$in"])
         survey_cycle = query["survey_cycle"]
+        employee_ids = set(query.get("employee_id", {}).get("$in", []))
         matches = [
             {key: value for key, value in document.items() if key != "_id"}
             for document in self._documents
-            if document["employee_id"] in employee_ids and document["survey_cycle"] == survey_cycle
+            if document["survey_cycle"] == survey_cycle and (not employee_ids or document["employee_id"] in employee_ids)
         ]
         return FakeAsyncCursor(matches)
 
@@ -43,24 +44,22 @@ class FakeSurveyResponsesCollection:
             return document
         return project_document(document, projection)
 
-    async def update_one(self, query: dict, update: dict, upsert: bool = False) -> "FakeUpdateResult":
-        self.update_calls.append((query, update, upsert))
-        document = next(
+    async def insert_one(self, document: dict) -> None:
+        query = {
+            "employee_id": document["employee_id"],
+            "survey_cycle": document["survey_cycle"],
+        }
+        existing = next(
             (
-                document
-                for document in self._documents
-                if document["employee_id"] == query["employee_id"] and document["survey_cycle"] == query["survey_cycle"]
+                stored
+                for stored in self._documents
+                if stored["employee_id"] == query["employee_id"] and stored["survey_cycle"] == query["survey_cycle"]
             ),
             None,
         )
-        matched = document is not None
-        if document is None:
-            if not upsert:
-                return FakeUpdateResult(matched_count=0, upserted_id=None)
-            document = dict(update.get("$setOnInsert", {}))
-            self._documents.append(document)
-        document.update(update.get("$set", {}))
-        return FakeUpdateResult(matched_count=1 if matched else 0, upserted_id="fake_insert_id" if not matched else None)
+        if existing is not None:
+            raise DuplicateKeyError("duplicate employee/cycle response")
+        self._documents.append(document)
 
 
 class FakeDb:
@@ -104,14 +103,25 @@ async def test_find_by_employee_ids_deduplicates_query_ids(response_documents, a
     assert projection == {"_id": 0}
 
 
-async def test_upsert_response_creates_new_employee_cycle_response(valid_survey_submission, active_survey_cycle):
+async def test_submitted_employee_ids_filters_to_active_survey_cycle(response_documents, active_survey_cycle):
+    db = FakeDb(response_documents)
+    repository = SurveyResponseRepository(db, survey_cycle=active_survey_cycle)
+
+    employee_ids = await repository.submitted_employee_ids()
+
+    assert employee_ids == ["emp_104", "emp_105", "emp_108"]
+    query, projection = db.survey_responses.find_calls[0]
+    assert query == {"survey_cycle": active_survey_cycle}
+    assert projection == {"_id": 0, "employee_id": 1}
+
+
+async def test_create_response_creates_new_employee_cycle_response(valid_survey_submission, active_survey_cycle):
     db = FakeDb([])
     repository = SurveyResponseRepository(db, survey_cycle=active_survey_cycle)
     submission = SurveyResponseSubmission.model_validate(valid_survey_submission)
 
-    stored, created = await repository.upsert_response(submission, survey_version="1.0")
+    stored = await repository.create_response(submission, survey_version="1.0")
 
-    assert created is True
     assert stored["id"].startswith("response_")
     assert stored["employee_id"] == "emp_104"
     assert stored["survey_cycle"] == active_survey_cycle
@@ -120,7 +130,29 @@ async def test_upsert_response_creates_new_employee_cycle_response(valid_survey_
     assert "submitted_at" in stored
 
 
-async def test_upsert_response_preserves_existing_id_when_document_appears_before_write(
+async def test_create_response_rejects_existing_employee_cycle_response(
+    valid_survey_submission,
+    active_survey_cycle,
+):
+    existing_document = {
+        "id": "resp_existing",
+        "employee_id": "emp_104",
+        "survey_cycle": active_survey_cycle,
+        "survey_version": "1.0",
+        "answers": {"ai_usage_frequency": "never"},
+    }
+    db = FakeDb([existing_document])
+    repository = SurveyResponseRepository(db, survey_cycle=active_survey_cycle)
+    submission = SurveyResponseSubmission.model_validate(valid_survey_submission)
+
+    with pytest.raises(SurveyResponseAlreadyExistsError):
+        await repository.create_response(submission, survey_version="1.1")
+
+    assert db.survey_responses.update_calls == []
+    assert db.survey_responses._documents == [existing_document]
+
+
+async def test_create_response_rejects_duplicate_key_when_document_appears_before_insert(
     valid_survey_submission,
     active_survey_cycle,
 ):
@@ -135,12 +167,7 @@ async def test_upsert_response_preserves_existing_id_when_document_appears_befor
     repository = SurveyResponseRepository(db, survey_cycle=active_survey_cycle)
     submission = SurveyResponseSubmission.model_validate(valid_survey_submission)
 
-    stored, created = await repository.upsert_response(submission, survey_version="1.1")
+    with pytest.raises(SurveyResponseAlreadyExistsError):
+        await repository.create_response(submission, survey_version="1.1")
 
-    assert created is False
-    assert stored["id"] == "resp_existing"
-    assert stored["survey_version"] == "1.1"
-    _, update, upsert = db.survey_responses.update_calls[0]
-    assert upsert is True
-    assert "id" not in update["$set"]
-    assert update["$setOnInsert"]["id"].startswith("response_")
+    assert db.survey_responses._documents == [existing_document]

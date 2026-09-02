@@ -7,7 +7,9 @@ from fastapi.testclient import TestClient
 from app.config import Settings
 from app.db import get_database
 from app.routers import survey_responses
-from helpers import FakeUpdateResult, replace_nested
+from pymongo.errors import DuplicateKeyError
+
+from helpers import replace_nested
 
 
 class FakeEmployeesCollection:
@@ -24,6 +26,16 @@ class FakeSurveyResponsesCollection:
     def __init__(self) -> None:
         self.documents: dict[tuple[str, str], dict] = {}
 
+    def find(self, query: dict, projection: dict):
+        survey_cycle = query["survey_cycle"]
+        return FakeSubmittedEmployeeCursor(
+            [
+                {key: value for key, value in document.items() if key != "_id" and projection.get(key) != 0}
+                for key, document in self.documents.items()
+                if key[1] == survey_cycle
+            ]
+        )
+
     async def find_one(self, query: dict, projection: dict | None = None) -> dict | None:
         document = self.documents.get((query["employee_id"], query["survey_cycle"]))
         if document is None:
@@ -32,15 +44,26 @@ class FakeSurveyResponsesCollection:
             return {key: value for key, value in document.items() if key != "_id"}
         return document
 
-    async def update_one(self, query: dict, update: dict, upsert: bool = False):
-        key = (query["employee_id"], query["survey_cycle"])
-        document = self.documents.get(key, {})
-        created = key not in self.documents
-        if created:
-            document.update(update.get("$setOnInsert", {}))
-        document.update(update.get("$set", {}))
+    async def insert_one(self, document: dict) -> None:
+        key = (document["employee_id"], document["survey_cycle"])
+        if key in self.documents:
+            raise DuplicateKeyError("duplicate employee/cycle response")
         self.documents[key] = document
-        return FakeUpdateResult(upserted_id="fake_insert_id" if created else None)
+
+
+class FakeSubmittedEmployeeCursor:
+    def __init__(self, documents: list[dict]) -> None:
+        self._documents = documents
+
+    def __aiter__(self):
+        self._iterator = iter(self._documents)
+        return self
+
+    async def __anext__(self):
+        try:
+            return next(self._iterator)
+        except StopIteration as exc:
+            raise StopAsyncIteration from exc
 
 
 class FakeDb:
@@ -77,7 +100,23 @@ def test_post_survey_response_persists_server_fields(survey_api_client, valid_su
     assert db.survey_responses.documents[("emp_104", active_survey_cycle)]["answers"]["ai_usage_frequency"] == "daily"
 
 
-def test_post_survey_response_replaces_existing_employee_cycle_response(survey_api_client, valid_survey_submission, active_survey_cycle):
+def test_get_submitted_employee_ids_returns_active_cycle_respondents(survey_api_client, valid_survey_submission, active_survey_cycle):
+    client, db = survey_api_client
+    client.post("/api/survey-responses", json=valid_survey_submission)
+    old_cycle_document = {
+        **db.survey_responses.documents[("emp_104", active_survey_cycle)],
+        "id": "resp_old",
+        "survey_cycle": "2026-h1",
+    }
+    db.survey_responses.documents[("emp_104", "2026-h1")] = old_cycle_document
+
+    response = client.get("/api/survey-responses/submitted-employee-ids")
+
+    assert response.status_code == 200
+    assert response.json() == {"employee_ids": ["emp_104"]}
+
+
+def test_post_survey_response_rejects_existing_employee_cycle_response(survey_api_client, valid_survey_submission, active_survey_cycle):
     client, db = survey_api_client
     first = client.post("/api/survey-responses", json=valid_survey_submission)
     updated_submission = replace_nested(valid_survey_submission, ("answers", "ai_usage_frequency"), "never")
@@ -85,11 +124,12 @@ def test_post_survey_response_replaces_existing_employee_cycle_response(survey_a
     second = client.post("/api/survey-responses", json=updated_submission)
 
     assert first.status_code == 201
-    assert second.status_code == 200
+    assert second.status_code == 409
+    assert second.json() == {"detail": "survey response already submitted"}
     assert len(db.survey_responses.documents) == 1
     document = db.survey_responses.documents[("emp_104", active_survey_cycle)]
     assert document["id"] == first.json()["id"]
-    assert document["answers"]["ai_usage_frequency"] == "never"
+    assert document["answers"]["ai_usage_frequency"] == "daily"
 
 
 def test_post_survey_response_returns_404_for_unknown_employee(survey_api_client, valid_survey_submission):

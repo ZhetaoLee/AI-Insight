@@ -1,12 +1,13 @@
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from pymongo.errors import DuplicateKeyError
 
 from app.config import Settings
 from app.db import get_database
 from app.repositories.seed import SEED_EMPLOYEES
 from app.routers import metrics, survey_responses
-from helpers import FakeAsyncCursor, FakeUpdateResult, project_document, survey_response_document
+from helpers import FakeAsyncCursor, project_document, survey_response_document
 
 
 class FakeEmployeesCollection:
@@ -50,21 +51,18 @@ class FakeSurveyResponsesCollection:
             return None
         return project_document(document, projection) if projection else document
 
-    async def update_one(self, query: dict, update: dict, upsert: bool = False) -> "FakeUpdateResult":
-        document = next(
+    async def insert_one(self, document: dict) -> None:
+        existing = next(
             (
-                document
-                for document in self.documents
-                if document["employee_id"] == query["employee_id"] and document["survey_cycle"] == query["survey_cycle"]
+                stored
+                for stored in self.documents
+                if stored["employee_id"] == document["employee_id"] and stored["survey_cycle"] == document["survey_cycle"]
             ),
             None,
         )
-        created = document is None
-        if document is None:
-            document = dict(update.get("$setOnInsert", {}))
-            self.documents.append(document)
-        document.update(update.get("$set", {}))
-        return FakeUpdateResult(upserted_id="fake_insert_id" if created else None)
+        if existing is not None:
+            raise DuplicateKeyError("duplicate employee/cycle response")
+        self.documents.append(document)
 
 
 class FakeDb:

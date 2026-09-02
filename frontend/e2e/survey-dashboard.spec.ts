@@ -90,6 +90,16 @@ test("employee survey submission is reflected in the executive dashboard", async
   await expect(gaugeCard.locator(".info-tooltip")).toHaveCSS("opacity", "1");
   await comboCard.locator(".info-help").hover();
   await expect(comboCard.locator(".info-tooltip")).toHaveCSS("opacity", "1");
+  const valueAreaCard = page.locator(".value-area-card");
+  await expect(valueAreaCard.getByText("AI value area ranking", { exact: true })).toBeVisible();
+  await expect(valueAreaCard.locator(".card-eyebrow")).toHaveCount(0);
+  await expect(valueAreaCard.locator(".info-help")).toHaveCount(1);
+  await expect(valueAreaCard.locator(".card-hint")).toHaveCount(0);
+  await expect(valueAreaCard).not.toContainText(/rank 1:/i);
+  await expect(valueAreaCard.locator(".value-area-tooltip")).toHaveCount(await valueAreaCard.locator(".value-area-row").count());
+  await valueAreaCard.locator(".value-area-row").first().hover();
+  await expect(valueAreaCard.locator(".value-area-row").first().locator(".value-area-tooltip")).toHaveCSS("opacity", "1");
+  await expect(valueAreaCard.locator(".value-area-row").first().locator(".rank-count-chip")).toHaveCount(3);
   const distributionGrid = page.locator(".distribution-grid");
   await expect(distributionGrid.locator(".panel-card")).toHaveCount(6);
   await expect(distributionGrid.locator(".card-eyebrow")).toHaveCount(0);
@@ -120,4 +130,5 @@ test("employee survey submission is reflected in the executive dashboard", async
   await expect(page).toHaveURL(/\/survey$/);
   await expect(page.locator(".dashboard-sidebar")).toBeVisible();
   await expect(page.getByText("AI productivity survey")).toBeVisible();
+  await expect(page.locator("#employee-picker option", { hasText: "Alice Chen" })).toHaveCount(0);
 });

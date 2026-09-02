@@ -4,8 +4,13 @@ from typing import Any
 from uuid import uuid4
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo.errors import DuplicateKeyError
 
 from app.models.survey_response import SurveyResponseSubmission
+
+
+class SurveyResponseAlreadyExistsError(Exception):
+    pass
 
 
 class SurveyResponseRepository:
@@ -27,33 +32,38 @@ class SurveyResponseRepository:
         )
         return [document async for document in cursor]
 
-    async def upsert_response(
+    async def submitted_employee_ids(self) -> list[str]:
+        cursor = self._collection.find(
+            {"survey_cycle": self._survey_cycle},
+            {"_id": 0, "employee_id": 1},
+        )
+        employee_ids = []
+        async for document in cursor:
+            employee_ids.append(document["employee_id"])
+        return list(dict.fromkeys(employee_ids))
+
+    async def create_response(
         self,
         submission: SurveyResponseSubmission,
         survey_version: str,
-    ) -> tuple[dict[str, Any], bool]:
+    ) -> dict[str, Any]:
         query = {
             "employee_id": submission.employee_id,
             "survey_cycle": self._survey_cycle,
         }
-        update_result = await self._collection.update_one(
-            query,
-            {
-                "$setOnInsert": {
-                    "id": f"response_{uuid4().hex}",
-                    "employee_id": submission.employee_id,
-                    "survey_cycle": self._survey_cycle,
-                },
-                "$set": {
-                    "survey_version": survey_version,
-                    "answers": submission.answers.model_dump(),
-                    "submitted_at": datetime.now(UTC),
-                },
-            },
-            upsert=True,
-        )
+        if await self._collection.find_one(query, {"_id": 0, "id": 1}) is not None:
+            raise SurveyResponseAlreadyExistsError
 
-        stored = await self._collection.find_one(query, {"_id": 0})
-        if stored is None:  # pragma: no cover - defensive guard for database failures
-            raise RuntimeError("survey response upsert did not return a stored document")
-        return stored, update_result.upserted_id is not None
+        document = {
+            "id": f"response_{uuid4().hex}",
+            "employee_id": submission.employee_id,
+            "survey_cycle": self._survey_cycle,
+            "survey_version": survey_version,
+            "answers": submission.answers.model_dump(),
+            "submitted_at": datetime.now(UTC),
+        }
+        try:
+            await self._collection.insert_one(dict(document))
+        except DuplicateKeyError as exc:
+            raise SurveyResponseAlreadyExistsError from exc
+        return document

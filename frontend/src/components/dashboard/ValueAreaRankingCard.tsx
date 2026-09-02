@@ -1,67 +1,91 @@
-import { useState } from "react";
 import type { ValueAreaRanking } from "../../types/metrics";
 import { OTHER_CODE } from "../../types/survey";
+import { InfoTooltip } from "./InfoTooltip";
 
 interface ValueAreaRankingCardProps {
   ranking: ValueAreaRanking;
 }
 
-export function ValueAreaRankingCard({ ranking }: ValueAreaRankingCardProps) {
-  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
-  const max = Math.max(1, ...ranking.rows.map((r) => r.total));
-  const hovered = hoverIdx !== null ? ranking.rows[hoverIdx] : null;
+const RANK_SEGMENTS = [
+  { key: "rank1", label: "1st", legendLabel: "Rank 1", color: "#1d3f8f" },
+  { key: "rank2", label: "2nd", legendLabel: "Rank 2", color: "#4d7fd6" },
+  { key: "rank3", label: "3rd", legendLabel: "Rank 3", color: "#adc7ef" },
+] as const;
 
-  const hint = hovered
-    ? hovered.code === OTHER_CODE && Object.keys(hovered.otherTexts).length
-      ? "Other · " + Object.entries(hovered.otherTexts).map(([t, c]) => `${t} (${c})`).join(" · ")
-      : `${hovered.label} · rank 1: ${hovered.rank1} · rank 2: ${hovered.rank2} · rank 3: ${hovered.rank3}`
-    : 'Sorted by total votes, then rank 1, rank 2, rank 3. Hover a row for the rank split; hover "Other" for the submitted text.';
+function formatOtherTextCount([text, count]: [string, number]) {
+  return `${text} (${count})`;
+}
+
+export function ValueAreaRankingCard({ ranking }: ValueAreaRankingCardProps) {
+  const max = Math.max(1, ...ranking.rows.map((r) => r.total));
+  const helpText =
+    "Q2 ranks each respondent's top three AI value areas. Bars are sorted by total votes, then first-, second-, and third-place votes.";
 
   return (
     <div className="card value-area-card">
       <div className="value-area-head">
-        <div>
+        <div className="value-area-title-row">
           <div className="card-title">AI value area ranking</div>
-          <div className="card-eyebrow">Q2 · ranked top three · n = {ranking.denominator}</div>
+          <InfoTooltip label="AI value area ranking help">{helpText}</InfoTooltip>
         </div>
         <div className="value-area-legend">
-          <div className="legend-item">
-            <div className="legend-swatch" style={{ background: "#1d3f8f" }} />
-            Rank 1
-          </div>
-          <div className="legend-item">
-            <div className="legend-swatch" style={{ background: "#4d7fd6" }} />
-            Rank 2
-          </div>
-          <div className="legend-item">
-            <div className="legend-swatch" style={{ background: "#adc7ef" }} />
-            Rank 3
-          </div>
+          {RANK_SEGMENTS.map((rank) => (
+            <div className="legend-item" key={rank.key}>
+              <div className="legend-swatch" style={{ background: rank.color }} />
+              {rank.legendLabel}
+            </div>
+          ))}
         </div>
       </div>
       <div className="value-area-rows">
-        {ranking.rows.map((r, idx) => (
-          <div
-            key={r.code}
-            className="value-area-row"
-            onMouseEnter={() => setHoverIdx(idx)}
-            onMouseLeave={() => setHoverIdx(null)}
-          >
-            <div className="value-area-label" style={{ color: hoverIdx === idx ? "#1f2a37" : "#5d6874" }}>
-              {r.label}
-            </div>
-            <div className="value-area-bar-track">
-              <div className="value-area-bar-fill" style={{ width: `${Math.round((r.total / max) * 100)}%` }}>
-                <div style={{ flex: r.rank1 || 0.0001, background: "#1d3f8f" }} />
-                <div style={{ flex: r.rank2 || 0.0001, background: "#4d7fd6" }} />
-                <div style={{ flex: r.rank3 || 0.0001, background: "#adc7ef" }} />
+        {ranking.rows.map((r) => {
+          const otherTexts = Object.entries(r.otherTexts);
+          const hasOtherText = r.code === OTHER_CODE && otherTexts.length > 0;
+
+          return (
+            <div
+              key={r.code}
+              className="value-area-row"
+              tabIndex={0}
+              aria-label={`${r.label}. Total ${r.total}. First place ${r.rank1}, second place ${r.rank2}, third place ${r.rank3}.`}
+            >
+              <div className="value-area-label">{r.label}</div>
+              <div className="value-area-bar-track">
+                <div className="value-area-bar-fill" style={{ width: `${Math.round((r.total / max) * 100)}%` }}>
+                  {RANK_SEGMENTS.map((rank) => (
+                    <div key={rank.key} style={{ flex: r[rank.key] || 0.0001, background: rank.color }} />
+                  ))}
+                </div>
+              </div>
+              <div className="value-area-total">{r.total}</div>
+              <div className="value-area-tooltip" role="tooltip">
+                <div className="value-area-tooltip-title">{r.label}</div>
+                <div className="rank-counts" aria-hidden="true">
+                  {RANK_SEGMENTS.map((rank) => (
+                    <span className="rank-count-chip" key={rank.key}>
+                      <span className="rank-count-dot" style={{ background: rank.color }} />
+                      <span>{rank.label}</span>
+                      <strong>{r[rank.key]}</strong>
+                    </span>
+                  ))}
+                </div>
+                {hasOtherText ? (
+                  <div className="value-area-other-texts">
+                    {otherTexts.map((entry) => (
+                      <span className="value-area-other-text" key={entry[0]}>
+                        {formatOtherTextCount(entry)}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </div>
-            <div className="value-area-total">{r.total}</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-      <div className="card-hint">{hint}</div>
+      <div className="value-area-caption">
+        Sorted by total votes, then 1st, 2nd, and 3rd place votes. Hover or focus a row for details.
+      </div>
     </div>
   );
 }

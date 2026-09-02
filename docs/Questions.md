@@ -5,6 +5,10 @@ backend validation, API payloads, and metric calculations must use these answer 
 
 ## Employee Context
 
+The employee name picker lists only employees who have not submitted a response
+for the active survey cycle. Once an employee submits, their name is hidden from
+new survey submissions for that cycle.
+
 ### Level [Read-only]
 
 The employee's level is loaded from the selected employee record. It is not submitted

@@ -976,6 +976,8 @@ Required endpoints:
 ```http
 GET /api/employees
 
+GET /api/survey-responses/submitted-employee-ids
+
 POST /api/survey-responses
 
 GET /api/metrics?scope=org&q3=more_than_5_hours&q4=slightly_more&q5=slightly_better
@@ -1001,6 +1003,8 @@ The API must return `422` for `q3=not_sure` because `not_sure` is missing data a
 
 The backend owns the dynamic Q3-Q5 analysis calculation. The frontend sends criteria and renders the returned `q3_q5_analysis`; it must not filter raw responses locally once the backend is available.
 
+`GET /api/employees` remains a static employee directory. Active-cycle response state is exposed separately through `GET /api/survey-responses/submitted-employee-ids`, which returns employees who already submitted for the configured survey cycle. The survey page uses that response to hide submitted employees from the name picker.
+
 ---
 
 # 23. Error Handling
@@ -1021,7 +1025,7 @@ Examples:
 422
 ```
 
-### Write conflict during response upsert
+### Duplicate active-cycle survey response
 
 ```http
 409
@@ -1059,7 +1063,7 @@ The system should enforce:
 
 7. Survey answer values must match defined enums.
 
-8. One employee should have at most one active response per survey cycle; resubmitting through `POST /api/survey-responses` must replace the existing active-cycle response by upsert.
+8. One employee should have at most one active response per survey cycle; repeat `POST /api/survey-responses` submissions for the same employee and active cycle must be rejected with `409 Conflict`.
 
 9. Q8 `no_major_barriers` must be mutually exclusive with every other barrier choice.
 

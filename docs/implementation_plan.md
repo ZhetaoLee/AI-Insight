@@ -26,7 +26,7 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - Q2 exactly three unique ranked areas and unique rank positions are enforced.
 - `other_text` is required when Q2, Q7, or Q8 uses `other`.
 - Q8 `no_major_barriers` exclusivity is enforced.
-- One active response is upserted per `(employee_id, survey_cycle)`.
+- One active response is accepted per `(employee_id, survey_cycle)`; duplicate active-cycle submissions return `409 Conflict`.
 - Tests verify clients send only `employee_id` and `answers`; the server populates response IDs, survey cycle, survey version, and submission timestamp.
 
 ## Plan 4: Metrics Engine [Complete]
@@ -55,6 +55,7 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - Add tests for required survey fields, Q2 ranking, `Other` text, and Q8 exclusivity.
 - Add tests that dashboard requests include `scope`, `scope_id`, `q3`, `q4`, and `q5`.
 - Keep local employee and survey-submit fallback behavior as a demo aid when the backend is unavailable.
+- Hide employees who already submitted for the active survey cycle from the survey name picker.
 - Dashboard metrics are fetched from the backend and are not recomputed in frontend code.
 
 ## Plan 7: End-to-End Validation [Complete]
@@ -63,7 +64,7 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - Run frontend type-check and production build.
 - Build Docker images when present and verify they start cleanly.
 - Start MongoDB, FastAPI, and the Vite frontend locally, either directly or through Docker Compose.
-- Manually validate survey submission, response replacement, dashboard refresh, org/manager/level scopes, and Q3-Q5 analysis.
+- Manually validate survey submission, duplicate-response rejection, dashboard refresh, org/manager/level scopes, and Q3-Q5 analysis.
 - Add one Playwright smoke test for the full submit-to-dashboard flow.
 
 ## Plan 8: Final Review and Release [Complete]

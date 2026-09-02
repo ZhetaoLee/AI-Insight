@@ -933,7 +933,7 @@ For the take-home build, the active `survey_cycle` should be a backend configura
 
 # 23. API Requirements
 
-The required API surface is intentionally small: submit survey responses and fetch rolled-up metrics by organization, manager, and level. Employee lookup is included to support the no-login name picker.
+The required API surface is intentionally small: list employees, list active-cycle submitted employee IDs, submit survey responses, and fetch rolled-up metrics by organization, manager, and level. Employee lookup is included to support the no-login name picker.
 
 ## Employees
 
@@ -941,7 +941,7 @@ The required API surface is intentionally small: submit survey responses and fet
 GET /api/employees
 ```
 
-Returns employee selector and dashboard filter data.
+Returns employee selector and dashboard filter data. This endpoint is a static directory and does not include active survey response state.
 
 Example response item:
 
@@ -956,13 +956,31 @@ Example response item:
 
 ---
 
+## Submitted Survey Employees
+
+```http
+GET /api/survey-responses/submitted-employee-ids
+```
+
+Returns employee IDs that already submitted for the active survey cycle. The survey page uses this response to hide those employees from the name picker.
+
+Example response:
+
+```json
+{
+  "employee_ids": ["emp_301", "emp_302"]
+}
+```
+
+---
+
 ## Submit Survey
 
 ```http
 POST /api/survey-responses
 ```
 
-Submits the employee's response for the active survey cycle. If a response already exists for that employee and cycle, replace it rather than creating a duplicate.
+Submits the employee's response for the active survey cycle. If a response already exists for that employee and cycle, reject the duplicate submission with `409 Conflict`.
 
 Request body:
 
@@ -982,7 +1000,7 @@ Request body:
 }
 ```
 
-The server populates `id`, `survey_cycle`, `survey_version`, and `submitted_at`. Submission is an upsert keyed by `(employee_id, survey_cycle)`, so resubmitting replaces that employee's active-cycle response.
+The server populates `id`, `survey_cycle`, `survey_version`, and `submitted_at`. The existing unique `(employee_id, survey_cycle)` index enforces one active-cycle response per employee.
 
 ---
 
@@ -1326,13 +1344,15 @@ The product is complete when:
 
 20. Dashboard metrics update after a new survey response is submitted.
 
-21. The frontend does not duplicate leadership metric business logic.
+21. The survey name picker hides employees who already submitted for the active survey cycle.
 
-22. Metric definitions are documented in `docs/metrics.md` and understandable to a non-technical leadership audience.
+22. The frontend does not duplicate leadership metric business logic.
 
-23. Backend unit and API tests pass before the feature is considered complete.
+23. Metric definitions are documented in `docs/metrics.md` and understandable to a non-technical leadership audience.
 
-24. Frontend type-check, build, and critical workflow tests pass before the feature is considered complete.
+24. Backend unit and API tests pass before the feature is considered complete.
+
+25. Frontend type-check, build, and critical workflow tests pass before the feature is considered complete.
 
 ---
 
@@ -1343,7 +1363,7 @@ Implementation should follow test-driven development for behavior that affects c
 Required test-first areas:
 
 - employee seed shape and hierarchy traversal,
-- survey submission validation and replacement by employee/cycle,
+- survey submission validation, submitted-employee filtering, and duplicate employee/cycle rejection,
 - all formulas in `docs/metrics.md`,
 - manager, level, and org scope resolution,
 - dynamic Q3-Q5 query behavior,

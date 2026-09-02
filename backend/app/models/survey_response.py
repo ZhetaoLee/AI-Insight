@@ -141,5 +141,9 @@ class SurveyResponse(BaseModel):
     submitted_at: datetime
 
 
+class SubmittedEmployeeIds(BaseModel):
+    employee_ids: list[str]
+
+
 def text_present(value: str | None) -> bool:
     return value is not None and bool(value.strip())

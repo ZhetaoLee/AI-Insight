@@ -2,15 +2,17 @@ import { LEVEL_LABELS, type Employee } from "../../types/employee";
 
 interface EmployeePickerProps {
   employees: Employee[];
+  contextEmployees?: Employee[];
   loading: boolean;
   value: string | null;
   onChange: (employeeId: string) => void;
   error?: boolean;
 }
 
-export function EmployeePicker({ employees, loading, value, onChange, error }: EmployeePickerProps) {
-  const selected = employees.find((e) => e.id === value) ?? null;
-  const manager = selected?.manager_id ? employees.find((e) => e.id === selected.manager_id) ?? null : null;
+export function EmployeePicker({ employees, contextEmployees = employees, loading, value, onChange, error }: EmployeePickerProps) {
+  const selected = contextEmployees.find((e) => e.id === value) ?? null;
+  const manager = selected?.manager_id ? contextEmployees.find((e) => e.id === selected.manager_id) ?? null : null;
+  const hasAvailableEmployees = employees.length > 0;
 
   return (
     <div className="field">
@@ -24,10 +26,10 @@ export function EmployeePicker({ employees, loading, value, onChange, error }: E
         className="employee-select"
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
-        disabled={loading}
+        disabled={loading || !hasAvailableEmployees}
       >
         <option value="" disabled>
-          {loading ? "Loading employees…" : "Select your name"}
+          {loading ? "Loading employees…" : hasAvailableEmployees ? "Select your name" : "No employees remaining"}
         </option>
         {employees.map((employee) => (
           <option key={employee.id} value={employee.id}>

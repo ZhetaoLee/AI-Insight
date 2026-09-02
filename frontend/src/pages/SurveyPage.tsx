@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchEmployees } from "../api/employees";
-import { submitSurveyResponse } from "../api/survey";
+import { fetchSubmittedEmployeeIds, submitSurveyResponse } from "../api/survey";
 import { EmployeePicker } from "../components/survey/EmployeePicker";
 import { MultiSelectQuestion } from "../components/survey/MultiSelectQuestion";
 import { OtherTextInput } from "../components/survey/OtherTextInput";
@@ -34,6 +34,7 @@ export function SurveyPage() {
   const [loadingEmployees, setLoadingEmployees] = useState(true);
   const [employeeLoadError, setEmployeeLoadError] = useState<string | null>(null);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
+  const [submittedEmployeeIds, setSubmittedEmployeeIds] = useState<Set<string>>(new Set());
 
   const [aiUsageFrequency, setAiUsageFrequency] = useState<string | null>(null);
   const [topValueAreaCodes, setTopValueAreaCodes] = useState<string[]>([]);
@@ -53,8 +54,11 @@ export function SurveyPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchEmployees()
-      .then(setEmployees)
+    Promise.all([fetchEmployees(), fetchSubmittedEmployeeIds()])
+      .then(([loadedEmployees, submittedIds]) => {
+        setEmployees(loadedEmployees);
+        setSubmittedEmployeeIds(new Set(submittedIds));
+      })
       .catch((error) => {
         setEmployeeLoadError(error instanceof Error ? error.message : "Unable to load employees.");
       })
@@ -126,6 +130,7 @@ export function SurveyPage() {
     setSubmitting(true);
     try {
       await submitSurveyResponse(buildSurveyResponseSubmission(formState));
+      setSubmittedEmployeeIds((prev) => new Set(prev).add(formState.employeeId!));
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
@@ -137,6 +142,7 @@ export function SurveyPage() {
 
   const hasErrors = hasSurveyErrors(errors);
   const rankedAreas = topValueAreaCodes.map((area, i) => ({ area, rank: i + 1, other_text: null }));
+  const availableEmployees = employees.filter((employee) => !submittedEmployeeIds.has(employee.id) || employee.id === employeeId);
 
   return (
     <div className="survey-shell">
@@ -168,7 +174,8 @@ export function SurveyPage() {
           <h2 className="group-title">Employee context</h2>
           <p className="group-subtitle">Select your name to load your level.</p>
           <EmployeePicker
-            employees={employees}
+            employees={availableEmployees}
+            contextEmployees={employees}
             loading={loadingEmployees}
             value={employeeId}
             onChange={(id) => {

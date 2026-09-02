@@ -1,6 +1,6 @@
 from app.models.employee import Employee, EmployeeLevel
 from app.models.metrics import DashboardMetricsResponse, Q3Q5Criteria, ScopeDescriptor
-from app.models.survey_response import SurveyResponse, SurveyResponseSubmission
+from app.models.survey_response import SubmittedEmployeeIds, SurveyResponse, SurveyResponseSubmission
 
 __all__ = [
     "DashboardMetricsResponse",
@@ -8,6 +8,7 @@ __all__ = [
     "EmployeeLevel",
     "Q3Q5Criteria",
     "ScopeDescriptor",
+    "SubmittedEmployeeIds",
     "SurveyResponse",
     "SurveyResponseSubmission",
 ]

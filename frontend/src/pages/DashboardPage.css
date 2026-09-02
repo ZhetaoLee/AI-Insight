@@ -444,6 +444,13 @@
   flex-wrap: wrap;
 }
 
+.value-area-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
 .card-eyebrow {
   font-family: "IBM Plex Mono", monospace;
   font-size: 10px;
@@ -471,6 +478,19 @@
   align-items: center;
   gap: 10px;
   cursor: default;
+  position: relative;
+  border-radius: 8px;
+  outline: none;
+}
+
+.value-area-row:hover .value-area-label,
+.value-area-row:focus .value-area-label {
+  color: var(--db-text);
+}
+
+.value-area-row:focus-visible {
+  outline: 2px solid rgba(31, 157, 124, 0.35);
+  outline-offset: 3px;
 }
 
 .value-area-label {
@@ -501,7 +521,88 @@
   text-align: right;
 }
 
-.card-hint {
+.value-area-tooltip {
+  position: absolute;
+  left: 158px;
+  top: 50%;
+  z-index: 4;
+  width: max-content;
+  max-width: min(330px, calc(100vw - 64px));
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #1f2a37;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(31, 42, 55, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(8px, -50%);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.value-area-row:hover .value-area-tooltip,
+.value-area-row:focus .value-area-tooltip {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+.value-area-tooltip-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+
+.rank-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.rank-count-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f6f8fa;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.rank-count-chip strong {
+  font-size: 11px;
+}
+
+.rank-count-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 999px;
+}
+
+.value-area-other-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  color: #dbe7f7;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.value-area-other-text {
+  overflow-wrap: anywhere;
+}
+
+.value-area-caption {
   font-size: 11px;
   color: var(--db-muted-3);
   line-height: 1.45;
@@ -789,4 +890,34 @@
   text-align: center;
   color: var(--db-muted-2);
   font-size: 13px;
+}
+
+@media (max-width: 720px) {
+  .value-combo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .value-area-card,
+  .combo-card {
+    padding: 18px;
+  }
+
+  .value-area-row {
+    grid-template-columns: minmax(72px, 104px) 1fr 32px;
+    gap: 8px;
+  }
+
+  .value-area-tooltip {
+    left: 0;
+    right: 0;
+    top: calc(100% + 6px);
+    width: auto;
+    max-width: none;
+    transform: translateY(-4px);
+  }
+
+  .value-area-row:hover .value-area-tooltip,
+  .value-area-row:focus .value-area-tooltip {
+    transform: translateY(0);
+  }
 }

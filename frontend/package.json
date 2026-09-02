@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "test": "vite build --config vite.config.ts --ssr tests/frontend.test.mjs --outDir .test-dist --emptyOutDir && node --test .test-dist/frontend.test.js",
-    "test:e2e": "sh -c 'docker compose -f ../docker-compose.yml down && playwright test; status=$?; docker compose -f ../docker-compose.yml down; exit $status'",
+    "test:e2e": "sh -c 'docker compose -f ../docker-compose.yml down -v && playwright test; status=$?; docker compose -f ../docker-compose.yml down -v; exit $status'",
     "preview": "vite preview",
     "lint": "tsc --noEmit"
   },

@@ -77,6 +77,7 @@ Initial implemented endpoints:
 GET /health
 GET /api/employees
 GET /api/metrics
+GET /api/survey-responses/submitted-employee-ids
 POST /api/survey-responses
 ```
 
@@ -92,5 +93,5 @@ Post-plan bugs are tracked as public Markdown files under `bug/`.
 
 - MongoDB is the source of truth for employees and survey responses.
 - Seed data is deterministic and contains 10 employees across the required hierarchy levels.
-- The survey employee picker and submit confirmation keep local fallback behavior as a demo aid when the backend is unavailable.
+- The survey employee picker hides employees who already submitted for the active cycle; local fallback behavior preserves that rule when the backend is unavailable.
 - Dashboard metrics are computed by the backend.
