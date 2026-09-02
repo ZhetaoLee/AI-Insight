@@ -1,5 +1,25 @@
 import { expect, test } from "@playwright/test";
 
+function surveySubmission(employeeId: string) {
+  return {
+    employee_id: employeeId,
+    answers: {
+      ai_usage_frequency: "daily",
+      top_value_areas: [
+        { area: "implementation", rank: 1, other_text: null },
+        { area: "research", rank: 2, other_text: null },
+        { area: "testing", rank: 3, other_text: null },
+      ],
+      weekly_time_saved: "more_than_5_hours",
+      work_output_change: "significantly_more",
+      quality_change: "slightly_better",
+      correction_frequency: "sometimes",
+      biggest_benefit: { option: "saves_time", other_text: null },
+      barriers: [{ option: "lack_of_training", other_text: null }],
+    },
+  };
+}
+
 test("employee survey submission is reflected in the executive dashboard", async ({ page, request }) => {
   await page.goto("/survey");
 
@@ -16,6 +36,12 @@ test("employee survey submission is reflected in the executive dashboard", async
   await expect(page.locator(".sidebar-nav").getByText("Barriers", { exact: true })).toHaveCount(0);
   await expect(page.locator(".sidebar-nav").getByText("Respondents", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Q3 2026 survey")).toHaveCount(0);
+  await expect(page.locator("#employee-picker option", { hasText: "Marcus Webb" })).toHaveCount(1);
+
+  const stalePageSubmission = await request.post("/api/survey-responses", { data: surveySubmission("emp_105") });
+  expect(stalePageSubmission.status()).toBe(201);
+  await page.locator("#employee-picker").focus();
+  await expect(page.locator("#employee-picker option", { hasText: "Marcus Webb" })).toHaveCount(0);
 
   await page.getByLabel("Your name").selectOption("emp_104");
   await expect(page.locator(".employee-context")).toContainText("Individual Contributor");
@@ -34,6 +60,14 @@ test("employee survey submission is reflected in the executive dashboard", async
   await page.getByRole("button", { name: "Submit response" }).click();
 
   await expect(page.getByText("Your response is recorded")).toBeVisible();
+  await expect(page.locator("#employee-picker option", { hasText: "Alice Chen" })).toHaveCount(0);
+
+  const resetRefreshSubmission = await request.post("/api/survey-responses", { data: surveySubmission("emp_108") });
+  expect(resetRefreshSubmission.status()).toBe(201);
+  await page.getByRole("button", { name: "Start another" }).click();
+  await expect(page.locator("#employee-picker option", { hasText: "Alice Chen" })).toHaveCount(0);
+  await expect(page.locator("#employee-picker option", { hasText: "Marcus Webb" })).toHaveCount(0);
+  await expect(page.locator("#employee-picker option", { hasText: "Jade Thompson" })).toHaveCount(0);
 
   const managerMetricsResponse = await request.get("/api/metrics?scope=manager&scope_id=emp_103");
   expect(managerMetricsResponse.ok()).toBeTruthy();

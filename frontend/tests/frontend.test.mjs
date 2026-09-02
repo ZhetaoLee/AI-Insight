@@ -271,6 +271,30 @@ test("survey page filters employees who already submitted this cycle", async () 
   assert.equal(employeePickerSource.includes("No employees remaining"), true);
 });
 
+test("survey page refreshes submitted employees before another selection", async () => {
+  const [surveyPageSource, employeePickerSource] = await Promise.all([
+    readFile(new URL("../src/pages/SurveyPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/survey/EmployeePicker.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(surveyPageSource.includes("refreshSubmittedEmployeeIds"), true);
+  assert.equal(surveyPageSource.includes("void refreshSubmittedEmployeeIds();"), true);
+  assert.equal(surveyPageSource.includes("onFocus={refreshSubmittedEmployeeIds}"), true);
+  assert.equal(surveyPageSource.includes("SUBMITTED_EMPLOYEE_REFRESH_MS"), true);
+  assert.equal(surveyPageSource.includes("window.setInterval"), true);
+  assert.equal(surveyPageSource.includes('window.addEventListener("focus"'), true);
+  assert.equal(surveyPageSource.includes('document.addEventListener("visibilitychange"'), true);
+  assert.equal(employeePickerSource.includes("onFocus?: () => void"), true);
+  assert.equal(employeePickerSource.includes("onFocus={onFocus}"), true);
+});
+
+test("survey page removes the current submitter from the picker immediately", async () => {
+  const surveyPageSource = await readFile(new URL("../src/pages/SurveyPage.tsx", import.meta.url), "utf8");
+
+  assert.equal(surveyPageSource.includes("setEmployeeId(null);"), true);
+  assert.equal(surveyPageSource.includes("employee.id === employeeId"), false);
+});
+
 test("survey submitted employee status uses backend data and local fallback", async () => {
   await withMockFetch(
     async (url) => {
@@ -299,6 +323,20 @@ test("survey submitted employee status uses backend data and local fallback", as
   await withMockFetch(
     async () => new Response("server error", { status: 500 }),
     () => assert.rejects(() => fetchSubmittedEmployeeIds(), /GET \/api\/survey-responses\/submitted-employee-ids failed: 500/)
+  );
+});
+
+test("server duplicate survey submissions get a clear user-facing error", async () => {
+  await withMockFetch(
+    async (url) => {
+      assert.equal(url, "/api/survey-responses");
+      return jsonResponse({ detail: "survey response already submitted" }, 409);
+    },
+    async () =>
+      assert.rejects(
+        () => submitSurveyResponse(buildSurveyResponseSubmission(validSurveyState())),
+        /This employee has already submitted a response for this cycle/
+      )
   );
 });
 

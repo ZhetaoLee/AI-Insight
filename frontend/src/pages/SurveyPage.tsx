@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { fetchEmployees } from "../api/employees";
 import { fetchSubmittedEmployeeIds, submitSurveyResponse } from "../api/survey";
 import { EmployeePicker } from "../components/survey/EmployeePicker";
@@ -29,6 +29,8 @@ import {
 } from "../types/survey";
 import "./SurveyPage.css";
 
+const SUBMITTED_EMPLOYEE_REFRESH_MS = 15_000;
+
 export function SurveyPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loadingEmployees, setLoadingEmployees] = useState(true);
@@ -53,6 +55,16 @@ export function SurveyPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const refreshSubmittedEmployeeIds = useCallback(async () => {
+    try {
+      const submittedIds = await fetchSubmittedEmployeeIds();
+      setSubmittedEmployeeIds(new Set(submittedIds));
+      setEmployeeLoadError(null);
+    } catch (error) {
+      setEmployeeLoadError(error instanceof Error ? error.message : "Unable to refresh submitted employees.");
+    }
+  }, []);
+
   useEffect(() => {
     Promise.all([fetchEmployees(), fetchSubmittedEmployeeIds()])
       .then(([loadedEmployees, submittedIds]) => {
@@ -64,6 +76,28 @@ export function SurveyPage() {
       })
       .finally(() => setLoadingEmployees(false));
   }, []);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      void refreshSubmittedEmployeeIds();
+    }, SUBMITTED_EMPLOYEE_REFRESH_MS);
+    const handleWindowFocus = () => {
+      void refreshSubmittedEmployeeIds();
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void refreshSubmittedEmployeeIds();
+      }
+    };
+
+    window.addEventListener("focus", handleWindowFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleWindowFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [refreshSubmittedEmployeeIds]);
 
   function toggleTopValueArea(code: string) {
     setTopValueAreaCodes((prev) => {
@@ -96,6 +130,7 @@ export function SurveyPage() {
     setErrors({});
     setSubmitted(false);
     setSubmitError(null);
+    void refreshSubmittedEmployeeIds();
   }
 
   const includesOtherArea = topValueAreaCodes.includes(OTHER_CODE);
@@ -129,12 +164,15 @@ export function SurveyPage() {
 
     setSubmitting(true);
     try {
+      const submittedEmployeeId = formState.employeeId!;
       await submitSurveyResponse(buildSurveyResponseSubmission(formState));
-      setSubmittedEmployeeIds((prev) => new Set(prev).add(formState.employeeId!));
+      setSubmittedEmployeeIds((prev) => new Set(prev).add(submittedEmployeeId));
+      setEmployeeId(null);
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Unable to submit the survey response.");
+      void refreshSubmittedEmployeeIds();
     } finally {
       setSubmitting(false);
     }
@@ -142,7 +180,7 @@ export function SurveyPage() {
 
   const hasErrors = hasSurveyErrors(errors);
   const rankedAreas = topValueAreaCodes.map((area, i) => ({ area, rank: i + 1, other_text: null }));
-  const availableEmployees = employees.filter((employee) => !submittedEmployeeIds.has(employee.id) || employee.id === employeeId);
+  const availableEmployees = employees.filter((employee) => !submittedEmployeeIds.has(employee.id));
 
   return (
     <div className="survey-shell">
@@ -182,6 +220,7 @@ export function SurveyPage() {
               setEmployeeId(id);
               setErrors((prev) => ({ ...prev, employee: false }));
             }}
+            onFocus={refreshSubmittedEmployeeIds}
             error={errors.employee}
           />
           {employeeLoadError && <div className="footer-error">{employeeLoadError}</div>}

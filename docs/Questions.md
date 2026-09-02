@@ -7,7 +7,9 @@ backend validation, API payloads, and metric calculations must use these answer 
 
 The employee name picker lists only employees who have not submitted a response
 for the active survey cycle. Once an employee submits, their name is hidden from
-new survey submissions for that cycle.
+new survey submissions for that cycle. The submitted-employee list is refreshed
+periodically while the page is open, when the page becomes active again, before
+another employee selection, and when starting another response.
 
 ### Level [Read-only]
 

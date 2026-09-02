@@ -60,6 +60,9 @@ export async function submitSurveyResponse(submission: SurveyResponseSubmission)
   }
 
   if (!res.ok) {
+    if (res.status === 409) {
+      throw new Error("This employee has already submitted a response for this cycle.");
+    }
     throw new Error(`Survey response was rejected by the server (${res.status}).`);
   }
 }

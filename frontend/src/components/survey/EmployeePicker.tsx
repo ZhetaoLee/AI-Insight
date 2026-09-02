@@ -6,10 +6,19 @@ interface EmployeePickerProps {
   loading: boolean;
   value: string | null;
   onChange: (employeeId: string) => void;
+  onFocus?: () => void;
   error?: boolean;
 }
 
-export function EmployeePicker({ employees, contextEmployees = employees, loading, value, onChange, error }: EmployeePickerProps) {
+export function EmployeePicker({
+  employees,
+  contextEmployees = employees,
+  loading,
+  value,
+  onChange,
+  onFocus,
+  error,
+}: EmployeePickerProps) {
   const selected = contextEmployees.find((e) => e.id === value) ?? null;
   const manager = selected?.manager_id ? contextEmployees.find((e) => e.id === selected.manager_id) ?? null : null;
   const hasAvailableEmployees = employees.length > 0;
@@ -26,6 +35,7 @@ export function EmployeePicker({ employees, contextEmployees = employees, loadin
         className="employee-select"
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={onFocus}
         disabled={loading || !hasAvailableEmployees}
       >
         <option value="" disabled>

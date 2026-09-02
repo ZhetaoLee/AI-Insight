@@ -962,7 +962,7 @@ Example response item:
 GET /api/survey-responses/submitted-employee-ids
 ```
 
-Returns employee IDs that already submitted for the active survey cycle. The survey page uses this response to hide those employees from the name picker.
+Returns employee IDs that already submitted for the active survey cycle. The survey page uses this response to hide those employees from the name picker, removes the current submitter immediately after a successful submission, refreshes the list periodically while the page is open, refreshes it when the page becomes active again, refreshes it before a new employee selection, and refreshes it when starting another response after a submission.
 
 Example response:
 

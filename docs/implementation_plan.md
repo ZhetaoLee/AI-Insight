@@ -55,7 +55,7 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - Add tests for required survey fields, Q2 ranking, `Other` text, and Q8 exclusivity.
 - Add tests that dashboard requests include `scope`, `scope_id`, `q3`, `q4`, and `q5`.
 - Keep local employee and survey-submit fallback behavior as a demo aid when the backend is unavailable.
-- Hide employees who already submitted for the active survey cycle from the survey name picker.
+- Hide employees who already submitted for the active survey cycle from the survey name picker, remove the current submitter immediately after submission, and refresh that submitted list periodically, when the page becomes active again, before another selection, or on reset.
 - Dashboard metrics are fetched from the backend and are not recomputed in frontend code.
 
 ## Plan 7: End-to-End Validation [Complete]
@@ -64,7 +64,7 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - Run frontend type-check and production build.
 - Build Docker images when present and verify they start cleanly.
 - Start MongoDB, FastAPI, and the Vite frontend locally, either directly or through Docker Compose.
-- Manually validate survey submission, duplicate-response rejection, dashboard refresh, org/manager/level scopes, and Q3-Q5 analysis.
+- Manually validate survey submission, duplicate-response rejection, stale survey-picker refresh, dashboard refresh, org/manager/level scopes, and Q3-Q5 analysis.
 - Add one Playwright smoke test for the full submit-to-dashboard flow.
 
 ## Plan 8: Final Review and Release [Complete]
