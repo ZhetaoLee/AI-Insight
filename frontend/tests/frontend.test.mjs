@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import { test } from "node:test";
 
 import {
@@ -357,24 +357,32 @@ test("app navigation is a persistent dashboard and survey sidebar", async () => 
   assert.equal(surveyStyles.includes("min-height: 100vh"), false);
 });
 
-test("adoption by level chart shows only adoption bars without a nested scroll window", async () => {
-  const [adoptionChartSource, dashboardStyles] = await Promise.all([
-    readFile(new URL("../src/components/dashboard/AdoptionChart.tsx", import.meta.url), "utf8"),
+test("adoption gauge and level leaderboard replace redundant adoption chart", async () => {
+  const adoptionChartPath = new URL("../src/components/dashboard/AdoptionChart.tsx", import.meta.url);
+  await assert.rejects(() => access(adoptionChartPath));
+
+  const [dashboardPageSource, adoptionSidePanelSource, dashboardStyles] = await Promise.all([
+    readFile(new URL("../src/pages/DashboardPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/dashboard/AdoptionSidePanel.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/pages/DashboardPage.css", import.meta.url), "utf8"),
   ]);
 
-  assert.equal(adoptionChartSource.includes("Reports more output"), false);
-  assert.equal(adoptionChartSource.includes("more output"), false);
-  assert.equal(adoptionChartSource.includes("more_output_rate"), false);
-  assert.equal(adoptionChartSource.includes("AI adoption rate"), true);
-  assert.equal(adoptionChartSource.includes("legend-dot"), true);
-
-  const chartAreaBlock = dashboardStyles.match(/\.bar-chart-area\s*\{[^}]*\}/)?.[0] ?? "";
-  const chartPlotBlock = dashboardStyles.match(/\.bar-chart-plot\s*\{[^}]*\}/)?.[0] ?? "";
-  const chartBarBlock = dashboardStyles.match(/\.bar-chart-bars > div\s*\{[^}]*\}/)?.[0] ?? "";
-  assert.equal(chartAreaBlock.includes("overflow-x: auto"), false);
-  assert.equal(chartPlotBlock.includes("min-width: 390px"), false);
-  assert.equal(chartBarBlock.includes("width: 26%"), false);
+  assert.equal(dashboardPageSource.includes("AdoptionChart"), false);
+  assert.equal(dashboardPageSource.includes("<AdoptionChart"), false);
+  assert.equal(adoptionSidePanelSource.includes("InfoTooltip"), true);
+  assert.equal(adoptionSidePanelSource.includes("Any usage other than \"Never\" counts as an active AI user."), true);
+  assert.equal(adoptionSidePanelSource.includes("dashboard-side-stack"), false);
+  assert.equal(adoptionSidePanelSource.includes("gauge-sub"), false);
+  assert.equal(adoptionSidePanelSource.includes("gauge-more"), false);
+  assert.equal(dashboardStyles.includes(".chart-card"), false);
+  assert.equal(dashboardStyles.includes(".chart-card-head"), false);
+  assert.equal(dashboardStyles.includes(".chart-legend"), false);
+  assert.equal(dashboardStyles.includes(".bar-chart-area"), false);
+  assert.equal(dashboardStyles.includes(".bar-chart-bars"), false);
+  assert.equal(dashboardStyles.includes(".chart-hint"), false);
+  assert.equal(dashboardStyles.includes(".dashboard-side-stack"), false);
+  assert.equal(dashboardStyles.includes(".gauge-sub"), false);
+  assert.equal(dashboardStyles.includes(".gauge-more"), false);
 });
 
 test("combo analysis card uses a leadership title and shared help tooltip", async () => {
@@ -415,15 +423,14 @@ test("distribution panels use clear titles help tooltips and fact-based footers"
 });
 
 test("dashboard removes midpoint-derived weekly hours estimates", async () => {
-  const [metricsTypesSource, adoptionChartSource, adoptionSidePanelSource, recordsTableSource, distributionPanelsSource] = await Promise.all([
+  const [metricsTypesSource, adoptionSidePanelSource, recordsTableSource, distributionPanelsSource] = await Promise.all([
     readFile(new URL("../src/types/metrics.ts", import.meta.url), "utf8"),
-    readFile(new URL("../src/components/dashboard/AdoptionChart.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/components/dashboard/AdoptionSidePanel.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/components/dashboard/RecordsTable.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/components/dashboard/DistributionPanels.tsx", import.meta.url), "utf8"),
   ]);
 
-  for (const source of [metricsTypesSource, adoptionChartSource, adoptionSidePanelSource, recordsTableSource, distributionPanelsSource]) {
+  for (const source of [metricsTypesSource, adoptionSidePanelSource, recordsTableSource, distributionPanelsSource]) {
     assert.equal(source.includes("avg_weekly_hours_saved"), false);
     assert.equal(source.includes("estimated_weekly_hours_saved"), false);
     assert.equal(source.includes("avg_hours_saved"), false);
@@ -432,6 +439,22 @@ test("dashboard removes midpoint-derived weekly hours estimates", async () => {
 
   assert.equal(recordsTableSource.includes("Avg hrs saved"), false);
   assert.equal(distributionPanelsSource.includes("Midpoints"), false);
+});
+
+test("records table does not render footer disclaimer text", async () => {
+  const [dashboardPageSource, recordsTableSource, dashboardStyles] = await Promise.all([
+    readFile(new URL("../src/pages/DashboardPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/dashboard/RecordsTable.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/DashboardPage.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(recordsTableSource.includes("eligibleTotal"), false);
+  assert.equal(recordsTableSource.includes("table-footer"), false);
+  assert.equal(recordsTableSource.includes("Seeded demonstration data"), false);
+  assert.equal(recordsTableSource.includes("fielded Q3 2026"), false);
+  assert.equal(recordsTableSource.includes("denominators shown per metric"), false);
+  assert.equal(dashboardPageSource.includes("eligibleTotal="), false);
+  assert.equal(dashboardStyles.includes(".table-footer"), false);
 });
 
 test("employee directory fallback is used only when the backend is unreachable", async () => {

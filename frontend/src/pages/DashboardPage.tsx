@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchDashboardMetrics, fetchOrgDirectory } from "../api/metrics";
-import { AdoptionChart } from "../components/dashboard/AdoptionChart";
 import { AdoptionSidePanel } from "../components/dashboard/AdoptionSidePanel";
 import { ComboAnalysisCard } from "../components/dashboard/ComboAnalysisCard";
 import { DashboardToolbar } from "../components/dashboard/DashboardToolbar";
@@ -116,7 +115,6 @@ export function DashboardPage() {
         </section>
 
         <div className="charts-grid">
-          <AdoptionChart groupBreakdown={metrics.group_breakdown} />
           <AdoptionSidePanel adoptionRate={metrics.headline_metrics.ai_adoption_rate} groupBreakdown={metrics.group_breakdown} groupLabel="Level" />
         </div>
 
@@ -127,10 +125,7 @@ export function DashboardPage() {
 
         <DistributionPanels metrics={metrics} visibleTitles="all" />
 
-        <RecordsTable
-          groupBreakdown={metrics.group_breakdown}
-          eligibleTotal={metrics.population.eligible_employees}
-        />
+        <RecordsTable groupBreakdown={metrics.group_breakdown} />
       </div>
     </div>
   );

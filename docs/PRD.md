@@ -541,8 +541,8 @@ Active AI Users
 These cards should display plain counts for the selected dashboard scope. Each
 card should include a hover-triggered help icon explaining the count. Rates such
 as response rate and AI adoption rate remain available in the dashboard's
-coverage, chart, analysis, and records sections rather than as cluttered top-row
-cards.
+coverage, gauge, leaderboard, analysis, and records sections rather than as
+cluttered top-row cards.
 
 ---
 
@@ -1010,7 +1010,7 @@ q5         optional, default slightly_better
 
 The `q3=not_sure` criterion must return `422` because `not_sure` is missing data, not a numeric or analytical bucket.
 
-The backend must recompute all metrics from individual responses for the resolved scope. It should also return `group_breakdown` rows, grouped by `level`, so the dashboard can render comparison charts and tables without recomputing metric business logic. Department is not part of this version's employee data model or a supported grouping dimension (see §7).
+The backend must recompute all metrics from individual responses for the resolved scope. It should also return `group_breakdown` rows, grouped by `level`, so the dashboard can render comparison views and tables without recomputing metric business logic. Department is not part of this version's employee data model or a supported grouping dimension (see §7).
 
 ---
 

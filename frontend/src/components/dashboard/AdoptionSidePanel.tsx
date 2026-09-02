@@ -1,5 +1,6 @@
 import type { GroupBreakdown, RateMetric } from "../../types/metrics";
 import { abbreviate } from "../../lib/dashboardFormat";
+import { InfoTooltip } from "./InfoTooltip";
 
 interface AdoptionSidePanelProps {
   adoptionRate: RateMetric;
@@ -12,9 +13,10 @@ export function AdoptionSidePanel({ adoptionRate, groupBreakdown, groupLabel }: 
   const arc = 270;
   const dash = `${((arc * valuePct) / 100).toFixed(1)} ${arc}`;
   const leaders = groupBreakdown.rows.slice(0, 4);
+  const helpText = 'Any usage other than "Never" counts as an active AI user. Non-respondents are excluded from the denominator.';
 
   return (
-    <div className="dashboard-side-stack">
+    <>
       <div className="card gauge-card">
         <div className="gauge-card-head">
           <div className="gauge-title-block">
@@ -23,7 +25,7 @@ export function AdoptionSidePanel({ adoptionRate, groupBreakdown, groupLabel }: 
               {adoptionRate.count} of {adoptionRate.denominator} respondents
             </div>
           </div>
-          <div className="gauge-more">···</div>
+          <InfoTooltip label="AI adoption rate help">{helpText}</InfoTooltip>
         </div>
         <div className="gauge-svg-wrap">
           <svg viewBox="0 0 200 112" style={{ width: "100%", height: "100%", display: "block" }}>
@@ -38,9 +40,6 @@ export function AdoptionSidePanel({ adoptionRate, groupBreakdown, groupLabel }: 
             />
           </svg>
           <div className="gauge-value">{valuePct}%</div>
-        </div>
-        <div className="gauge-sub">
-          Q1. Any usage other than "Never" counts as an active AI user. Non-respondents are excluded from the denominator.
         </div>
       </div>
 
@@ -75,6 +74,6 @@ export function AdoptionSidePanel({ adoptionRate, groupBreakdown, groupLabel }: 
           })}
         </div>
       </div>
-    </div>
+    </>
   );
 }

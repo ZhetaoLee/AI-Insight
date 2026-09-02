@@ -4,7 +4,6 @@ import { abbreviate } from "../../lib/dashboardFormat";
 
 interface RecordsTableProps {
   groupBreakdown: GroupBreakdown;
-  eligibleTotal: number;
 }
 
 type SortKey = "name" | "respondents" | "adoption_rate" | "more_output_rate" | "frequent_rework_rate";
@@ -18,7 +17,7 @@ const COLUMNS: { key: SortKey | "top_barrier"; label: string; align: "left" | "r
   { key: "top_barrier", label: "Top barrier", align: "left", sortable: false },
 ];
 
-export function RecordsTable({ groupBreakdown, eligibleTotal }: RecordsTableProps) {
+export function RecordsTable({ groupBreakdown }: RecordsTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>("adoption_rate");
   const [sortDir, setSortDir] = useState<1 | -1>(-1);
 
@@ -109,10 +108,6 @@ export function RecordsTable({ groupBreakdown, eligibleTotal }: RecordsTableProp
             })}
           </tbody>
         </table>
-      </div>
-      <div className="table-footer">
-        <div>Seeded demonstration data · {eligibleTotal} eligible employees · fielded Q3 2026</div>
-        <div>"Not sure" excluded from Q3-Q5 analysis · denominators shown per metric</div>
       </div>
     </div>
   );

@@ -63,12 +63,21 @@ test("employee survey submission is reflected in the executive dashboard", async
   await expect(page.getByText(/avg saved/i)).toHaveCount(0);
   await expect(page.locator(".hero-card")).toHaveCount(3);
   await expect(page.locator(".hero-card .info-help")).toHaveCount(3);
-  const adoptionChart = page.locator(".chart-card").filter({ hasText: "Adoption by level" });
-  await expect(adoptionChart.getByText("Reports more output", { exact: true })).toHaveCount(0);
-  await expect(adoptionChart.locator(".legend-item")).toHaveCount(1);
-  await expect(adoptionChart.locator(".bar-chart-bars > div")).toHaveCount(4);
-  const adoptionChartOverflows = await adoptionChart.locator(".bar-chart-area").evaluate((el) => el.scrollWidth > el.clientWidth);
-  expect(adoptionChartOverflows).toBeFalsy();
+  const chartsGrid = page.locator(".charts-grid");
+  await expect(page.getByText("Adoption by level", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".chart-card")).toHaveCount(0);
+  await expect(chartsGrid.locator(":scope > .card")).toHaveCount(2);
+  const gaugeCard = page.locator(".gauge-card");
+  const leaderboardCard = page.locator(".leaderboard-card");
+  await expect(gaugeCard.getByText("AI adoption rate", { exact: true })).toBeVisible();
+  await expect(gaugeCard.locator(".info-help")).toHaveCount(1);
+  await expect(gaugeCard.getByText(/^Q1\\./)).toHaveCount(0);
+  await expect(leaderboardCard.getByText("Level leaderboard", { exact: true })).toBeVisible();
+  const [gaugeBox, leaderboardBox] = await Promise.all([gaugeCard.boundingBox(), leaderboardCard.boundingBox()]);
+  expect(gaugeBox).not.toBeNull();
+  expect(leaderboardBox).not.toBeNull();
+  expect(Math.abs(gaugeBox!.y - leaderboardBox!.y)).toBeLessThan(8);
+  expect(leaderboardBox!.x).toBeGreaterThan(gaugeBox!.x);
   const comboCard = page.locator(".combo-card");
   await expect(comboCard.getByText("Productivity payoff analysis", { exact: true })).toBeVisible();
   await expect(comboCard.getByText("Dynamic Q3–Q5 analysis", { exact: true })).toHaveCount(0);
@@ -77,6 +86,8 @@ test("employee survey submission is reflected in the executive dashboard", async
 
   await page.locator(".hero-card .info-help").first().hover();
   await expect(page.locator(".hero-card .info-tooltip").first()).toHaveCSS("opacity", "1");
+  await gaugeCard.locator(".info-help").hover();
+  await expect(gaugeCard.locator(".info-tooltip")).toHaveCSS("opacity", "1");
   await comboCard.locator(".info-help").hover();
   await expect(comboCard.locator(".info-tooltip")).toHaveCSS("opacity", "1");
   const distributionGrid = page.locator(".distribution-grid");
@@ -98,6 +109,12 @@ test("employee survey submission is reflected in the executive dashboard", async
   await expect(distributionGrid.getByText(/is the most cited barrier, at \d+%/)).toBeVisible();
   await distributionGrid.locator(".info-help").first().hover();
   await expect(distributionGrid.locator(".info-tooltip").first()).toHaveCSS("opacity", "1");
+  const recordsTable = page.locator(".table-card");
+  await expect(recordsTable.getByText("Level records", { exact: true })).toBeVisible();
+  await expect(recordsTable.locator(".table-footer")).toHaveCount(0);
+  await expect(recordsTable).not.toContainText("Seeded demonstration data");
+  await expect(recordsTable).not.toContainText("fielded Q3 2026");
+  await expect(recordsTable).not.toContainText("denominators shown per metric");
 
   await page.getByRole("link", { name: "Survey" }).click();
   await expect(page).toHaveURL(/\/survey$/);
