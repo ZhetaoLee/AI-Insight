@@ -1,19 +1,23 @@
-# Survey Questions Reference
+# AI Productivity Survey
+
+This is the canonical survey question source for implementation. Frontend constants,
+backend validation, API payloads, and metric calculations must use these answer codes.
 
 ## Employee Context
 
-Level is read-only context loaded from the selected employee record. It is not submitted as a survey answer.
+### Level [Read-only]
+
+The employee's level is loaded from the selected employee record. It is not submitted
+as a survey answer.
 
 - `senior_director`: Senior Director
 - `director`: Director
 - `manager`: Manager
 - `ic`: IC
 
-## Questions
+## Q1. AI Usage Frequency [Single Choice]
 
-### Q1. AI Usage Frequency
-
-Single choice.
+How often do you currently use AI for work?
 
 - `never`: Never
 - `few_times_month`: A few times per month
@@ -21,9 +25,9 @@ Single choice.
 - `daily`: Daily
 - `multiple_times_day`: Multiple times per day
 
-### Q2. Top 3 AI Value Areas
+## Q2. Top 3 AI Value Areas [Ranking]
 
-Ranking. Exactly three unique areas are required. Rank `1` is most valuable.
+Rank 3 areas, where rank `1` is most valuable. Exactly three unique areas are required.
 
 - `planning`: Planning
 - `research`: Research
@@ -39,9 +43,9 @@ Ranking. Exactly three unique areas are required. Rank `1` is most valuable.
 
 If `other` is selected, `other_text` is required.
 
-### Q3. Weekly Time Saved
+## Q3. Weekly Time Saved [Single Choice]
 
-Single choice.
+In a typical week, approximately how much work does AI save you?
 
 - `no_noticeable_time_saved`: No noticeable time saved
 - `less_than_1_hour`: Less than 1 hour
@@ -49,9 +53,10 @@ Single choice.
 - `more_than_5_hours`: More than 5 hours
 - `not_sure`: Not sure
 
-### Q4. Work Output Impact
+## Q4. Work Output Impact [Single Choice]
 
-Single choice, 5-point Likert scale.
+Compared with working without AI, how has AI affected the amount of work you can
+complete in the same amount of time?
 
 - `much_less`: Much less
 - `slightly_less`: Slightly less
@@ -59,9 +64,9 @@ Single choice, 5-point Likert scale.
 - `slightly_more`: Slightly more
 - `significantly_more`: Significantly more
 
-### Q5. Work Quality Impact
+## Q5. Work Quality Impact [Single Choice]
 
-Single choice, 5-point Likert scale.
+How has AI affected the quality of your work?
 
 - `much_worse`: Much worse
 - `slightly_worse`: Slightly worse
@@ -69,9 +74,10 @@ Single choice, 5-point Likert scale.
 - `slightly_better`: Slightly better
 - `much_better`: Much better
 
-### Q6. AI Rework Frequency
+## Q6. AI Rework Frequency [Single Choice]
 
-Single choice, 5-point Likert scale.
+How often do you need to substantially correct or rewrite AI-generated output before
+using it?
 
 - `almost_never`: Almost never
 - `rarely`: Rarely
@@ -79,9 +85,9 @@ Single choice, 5-point Likert scale.
 - `often`: Often
 - `almost_always`: Almost always
 
-### Q7. Biggest AI Benefit
+## Q7. Biggest AI Benefit [Single Choice]
 
-Single choice.
+What is the biggest benefit AI provides in your day-to-day work?
 
 - `saves_time`: Saves time
 - `reduces_repetitive_work`: Reduces repetitive work
@@ -94,9 +100,9 @@ Single choice.
 
 If `other` is selected, `other_text` is required.
 
-### Q8. Barriers to Effective AI Use
+## Q8. Barriers to Effective AI Use [Multiple Choice]
 
-Multiple choice.
+What barriers limit your effective use of AI at work?
 
 - `tool_access`: Tool access
 - `lack_of_training`: Lack of training
@@ -108,4 +114,5 @@ Multiple choice.
 - `no_major_barriers`: No major barriers
 - `other`: Other
 
-If `other` is selected, `other_text` is required. `no_major_barriers` is mutually exclusive with every other barrier option.
+If `other` is selected, `other_text` is required. `no_major_barriers` is mutually
+exclusive with every other barrier option.
