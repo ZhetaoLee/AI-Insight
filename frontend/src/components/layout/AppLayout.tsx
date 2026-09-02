@@ -4,7 +4,7 @@ import { fetchOrgDirectory } from "../../api/metrics";
 import { resolveDashboardManagerId } from "../../lib/dashboardScope";
 import { LEVEL_LABELS, type Employee, type EmployeeLevel } from "../../types/employee";
 import { DashboardSidebar } from "../dashboard/DashboardSidebar";
-import type { HierarchyScope } from "../dashboard/OrgChartTree";
+import type { HierarchyScope, SelectedHierarchyScope } from "../dashboard/OrgChartTree";
 import "./AppLayout.css";
 
 export type DashboardScopeType = "org" | "manager" | "level";
@@ -36,9 +36,10 @@ export function AppLayout() {
     if (nextManagerId !== managerId) setManagerId(nextManagerId);
   }, [managerId, orgEmployees]);
 
-  const hierarchyScope: HierarchyScope = scopeType === "manager" ? { type: "manager", id: managerId } : { type: "org" };
+  const hierarchyScope: SelectedHierarchyScope =
+    scopeType === "level" ? null : scopeType === "manager" ? { type: "manager", id: managerId } : { type: "org" };
   const selectedHierarchyEmployee =
-    hierarchyScope.type === "manager" ? orgEmployees.find((employee) => employee.id === hierarchyScope.id) : undefined;
+    hierarchyScope?.type === "manager" ? orgEmployees.find((employee) => employee.id === hierarchyScope.id) : undefined;
   const hierarchyLabel = selectedHierarchyEmployee
     ? `${LEVEL_LABELS[selectedHierarchyEmployee.level]} Dashboard`
     : "Organization Dashboard";

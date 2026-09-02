@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import type { Employee } from "../../types/employee";
-import { OrgChartTree, type HierarchyScope } from "./OrgChartTree";
+import { OrgChartTree, type HierarchyScope, type SelectedHierarchyScope } from "./OrgChartTree";
 
 const NAV_ITEMS = [
   { label: "Dashboard", to: "/dashboard" },
@@ -9,7 +9,7 @@ const NAV_ITEMS = [
 
 export interface DashboardSidebarHierarchy {
   employees: Employee[];
-  selectedScope: HierarchyScope;
+  selectedScope: SelectedHierarchyScope;
   onSelect: (scope: HierarchyScope) => void;
 }
 

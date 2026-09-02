@@ -663,6 +663,10 @@ The dashboard UI presents this as two control modes:
 
 In hierarchy mode, the Organization root selects org-wide scope. Senior Director, Director, and Manager nodes select `scope=manager&scope_id=<employee_id>` and include that employee plus all descendants. Individual Contributor nodes are visible as leaves for context but are not selectable.
 
+In Level mode, the sidebar hierarchy tree remains visible for navigation context,
+but no Organization or manager tree node should appear selected because the
+active metrics scope is the cross-cutting level selector.
+
 The top-toolbar button that switches the dashboard into hierarchy mode is not a static "Hierarchy" label: its visible text always names the currently selected node, so leadership can tell at a glance what they're looking at — "Organization Dashboard" for the org-wide root, or "Senior Director Dashboard" / "Director Dashboard" / "Manager Dashboard" when a node at that level is selected in the sidebar tree.
 
 Examples:

@@ -2,10 +2,11 @@ import { buildChildrenMap, subtreeOf } from "../../lib/dashboardScope";
 import { LEVEL_LABELS, type Employee } from "../../types/employee";
 
 export type HierarchyScope = { type: "org" } | { type: "manager"; id: string };
+export type SelectedHierarchyScope = HierarchyScope | null;
 
 interface OrgChartTreeProps {
   employees: Employee[];
-  selectedScope: HierarchyScope;
+  selectedScope: SelectedHierarchyScope;
   onSelect: (scope: HierarchyScope) => void;
 }
 
@@ -16,7 +17,7 @@ export function OrgChartTree({ employees, selectedScope, onSelect }: OrgChartTre
   function renderEmployee(employee: Employee): JSX.Element {
     const children = childrenByManager.get(employee.id) ?? [];
     const isLeaf = employee.level === "ic";
-    const isSelected = selectedScope.type === "manager" && selectedScope.id === employee.id;
+    const isSelected = selectedScope?.type === "manager" && selectedScope.id === employee.id;
     const reportCount = isLeaf ? 0 : Math.max(subtreeOf(employees, employee.id).length - 1, 0);
 
     return (
@@ -53,7 +54,7 @@ export function OrgChartTree({ employees, selectedScope, onSelect }: OrgChartTre
     <div className="org-tree" aria-label="Organization hierarchy">
       <button
         type="button"
-        className={selectedScope.type === "org" ? "org-tree-root selected" : "org-tree-root"}
+        className={selectedScope?.type === "org" ? "org-tree-root selected" : "org-tree-root"}
         onClick={() => onSelect({ type: "org" })}
       >
         <span className="org-tree-name">Organization</span>

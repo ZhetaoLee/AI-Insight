@@ -131,6 +131,8 @@ test("employee survey submission is reflected in the executive dashboard", async
   await expect(page.getByRole("button", { name: "Organization Dashboard" })).toBeVisible();
   await page.getByRole("button", { name: "Level" }).click();
   await expect(page.locator(".toolbar-picker")).toBeVisible();
+  await expect(page.locator(".org-tree-root.selected")).toHaveCount(0);
+  await expect(page.locator(".org-tree-button.selected")).toHaveCount(0);
   await page.getByRole("button", { name: "Organization Dashboard" }).click();
   await expect(page.locator(".content-caption")).toHaveCount(0);
   await expect(page.getByText("Employees", { exact: true })).toBeVisible();

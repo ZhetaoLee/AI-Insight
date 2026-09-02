@@ -56,7 +56,7 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - Add tests that dashboard requests include `scope`, `scope_id`, `q3`, `q4`, and `q5`.
 - Keep local employee and survey-submit fallback behavior as a demo aid when the backend is unavailable.
 - Hide employees who already submitted for the active survey cycle from the survey name picker, remove the current submitter immediately after submission, clear all submitted answer state before another employee can be selected, and refresh that submitted list periodically, when the page becomes active again, before another selection, or on reset.
-- Replace the disconnected Organization/Manager dashboard controls with a hierarchy tree whose root selects org-wide scope, whose non-IC employee nodes select recursive manager scope, and whose IC leaves are visible but not selectable.
+- Replace the disconnected Organization/Manager dashboard controls with a hierarchy tree whose root selects org-wide scope, whose non-IC employee nodes select recursive manager scope, and whose IC leaves are visible but not selectable. When Level mode is active, keep the tree visible without marking the Organization root or a manager node as selected.
 - Dashboard metrics are fetched from the backend and are not recomputed in frontend code.
 
 ## Plan 7: End-to-End Validation [Complete]
