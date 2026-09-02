@@ -165,10 +165,14 @@ The dashboard is the primary landing experience.
 Navigation:
 
 ```text
-AI Productivity Insights
+Persistent sidebar
 
-Dashboard                       Submit Survey
+Dashboard
+Survey
 ```
+
+The sidebar should be shared by `/dashboard` and `/survey`; the two destinations
+should not also be duplicated in a separate top navigation bar.
 
 ---
 

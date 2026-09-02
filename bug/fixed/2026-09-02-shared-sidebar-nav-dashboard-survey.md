@@ -1,7 +1,8 @@
 # Sidebar nav should be Dashboard + Survey only, and should persist across both routes
 
-- **Status:** Active
+- **Status:** Fixed
 - **Reported:** 2026-09-02 (renamed/expanded from `2026-09-02-sidebar-dashboard-nav-not-hierarchical.md`, which only covered the visual-hierarchy problem within the old 7-item sidebar; this supersedes it with a larger scope)
+- **Fixed:** 2026-09-02
 
 ## Summary
 
@@ -89,3 +90,46 @@ Net effect, confirmed by reading both: navigating from `/dashboard` to `/survey`
 No backend, database, or docs changes needed — this is entirely a frontend routing/layout restructuring.
 
 **Related:** `bug/2026-09-02-sidebar-q3-2026-survey-card.md` (also filed, not yet fixed) touches the same `DashboardSidebar`/`DashboardPage` prop surface (removing the `coverage` prop) — worth sequencing or implementing together rather than in isolation, since both change the same files.
+
+## Fix
+
+Implemented the sidebar as shared app chrome instead of dashboard-only content:
+
+- `frontend/src/components/layout/AppLayout.tsx`: replaced the old top header with a persistent two-column app shell.
+- `frontend/src/components/layout/AppLayout.css`: added shared shell/sidebar layout styles and responsive behavior.
+- `frontend/src/components/dashboard/DashboardSidebar.tsx`: converted the sidebar to real React Router `NavLink`s for `/dashboard` and `/survey`.
+- `frontend/src/components/dashboard/navSections.ts`: removed the old seven-item in-page dashboard section model.
+- `frontend/src/pages/DashboardPage.tsx`: removed dashboard-owned sidebar rendering, `PANEL_PICK`, `navSection`, and conditional section rendering; the dashboard route now always shows the full dashboard.
+- `frontend/src/pages/DashboardPage.css`: removed dashboard shell/sidebar styles that now belong to the shared layout.
+- `frontend/src/pages/SurveyPage.css`: removed the full-viewport page assumption so the survey renders inside the shared shell.
+- `frontend/e2e/survey-dashboard.spec.ts`: verifies the sidebar exists on `/survey`, contains only Dashboard and Survey links, navigates to `/dashboard`, and persists when navigating back to `/survey`.
+- `frontend/tests/frontend.test.mjs`: added source-level regression coverage for the shared sidebar architecture and removal of old dashboard section nav code.
+- `docs/PRD.md`: updated the navigation requirement to specify a persistent sidebar shared by `/dashboard` and `/survey`, with no duplicate top navigation bar.
+
+The old bottom sidebar coverage card was removed as part of making the sidebar shared app chrome. To keep PRD §13.2 coverage visibility intact, the dashboard content now includes a `Response coverage` summary with count, rate, and progress bar.
+
+No backend, database, `AGENTS.md`, or `CLAUDE.md` change was needed.
+
+## Verification
+
+Initial regression coverage failed before the implementation:
+
+- `npm test`
+
+Full local verification run on 2026-09-02:
+
+- `uv run pytest` — 91 passed
+- `npm test` — 16 passed
+- `npm run lint`
+- `npm run build`
+- `npm run test:e2e` — 1 Playwright test passed
+- `git diff --check`
+
+Live-flow verification:
+
+- `/survey` renders the shared sidebar.
+- The sidebar contains exactly two route links: `Dashboard` and `Survey`.
+- The old top `Submit Survey` link is absent.
+- The old dashboard section items (`Adoption`, `Value areas`, `Time saved`, `Output & quality`, `Barriers`, `Respondents`) are absent from the sidebar.
+- The browser test submits a survey response, navigates to `/dashboard` through the sidebar, verifies dashboard content, then navigates back to `/survey` and confirms the sidebar persists.
+- Docker Compose was restarted after e2e teardown for manual verification.

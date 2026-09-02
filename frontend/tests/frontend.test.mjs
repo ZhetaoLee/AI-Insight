@@ -296,6 +296,43 @@ test("dashboard hero cards show plain population counts without old card clutter
   assert.equal(dashboardStyles.includes("hero-sub"), false);
 });
 
+test("app navigation is a persistent dashboard and survey sidebar", async () => {
+  const [layoutSource, sidebarSource, dashboardPageSource, layoutStyles, dashboardStyles, surveyStyles] = await Promise.all([
+    readFile(new URL("../src/components/layout/AppLayout.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/dashboard/DashboardSidebar.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/DashboardPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/layout/AppLayout.css", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/DashboardPage.css", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/SurveyPage.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(layoutSource.includes("<header"), false);
+  assert.equal(layoutSource.includes("Submit Survey"), false);
+  assert.equal(layoutSource.includes("DashboardSidebar"), true);
+  assert.equal(layoutSource.includes("<Outlet />"), true);
+  assert.equal(sidebarSource.includes("NavLink"), true);
+  assert.equal(sidebarSource.includes('to: "/dashboard"'), true);
+  assert.equal(sidebarSource.includes('to: "/survey"'), true);
+  assert.equal(sidebarSource.includes("NAV_SECTIONS"), false);
+  assert.equal(sidebarSource.includes("<button"), false);
+  assert.equal(sidebarSource.includes("Adoption"), false);
+  assert.equal(sidebarSource.includes("Value areas"), false);
+  assert.equal(sidebarSource.includes("Time saved"), false);
+  assert.equal(sidebarSource.includes("Output & quality"), false);
+  assert.equal(sidebarSource.includes("Barriers"), false);
+  assert.equal(sidebarSource.includes("Respondents"), false);
+  assert.equal(sidebarSource.includes("Q3 2026 survey"), false);
+  assert.equal(sidebarSource.includes("coverage"), false);
+  assert.equal(dashboardPageSource.includes("DashboardSidebar"), false);
+  assert.equal(dashboardPageSource.includes("navSection"), false);
+  assert.equal(dashboardPageSource.includes("PANEL_PICK"), false);
+  assert.equal(layoutStyles.includes(".app-frame"), true);
+  assert.equal(layoutStyles.includes(".dashboard-sidebar"), true);
+  assert.equal(dashboardStyles.includes(".dashboard-frame"), false);
+  assert.equal(dashboardStyles.includes("sidebar-coverage-card"), false);
+  assert.equal(surveyStyles.includes("min-height: 100vh"), false);
+});
+
 test("employee directory fallback is used only when the backend is unreachable", async () => {
   await withMockFetch(
     async () => {

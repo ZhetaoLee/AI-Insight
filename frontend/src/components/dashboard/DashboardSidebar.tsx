@@ -1,53 +1,34 @@
-import type { Coverage } from "../../types/metrics";
-import { NAV_SECTIONS, type NavSection } from "./navSections";
+import { NavLink } from "react-router-dom";
 
-interface DashboardSidebarProps {
-  navSection: NavSection;
-  onNavChange: (section: NavSection) => void;
-  coverage: Coverage;
-  barrierBadge: number | null;
-}
+const NAV_ITEMS = [
+  { label: "Dashboard", to: "/dashboard" },
+  { label: "Survey", to: "/survey" },
+];
 
-export function DashboardSidebar({ navSection, onNavChange, coverage, barrierBadge }: DashboardSidebarProps) {
-  const ratePct = Math.round(coverage.response_rate * 100);
-
+export function DashboardSidebar() {
   return (
-    <div className="dashboard-sidebar">
+    <aside className="dashboard-sidebar" aria-label="Primary navigation">
       <div className="sidebar-brand">
         <div className="brand-mark">A</div>
         <div className="brand-name">AI Insights</div>
       </div>
 
-      <div className="sidebar-nav">
-        <div className="sidebar-nav-label">Measure</div>
-        {NAV_SECTIONS.map((section) => {
-          const active = navSection === section;
-          const badge = section === "Barriers" ? barrierBadge : null;
+      <nav className="sidebar-nav" aria-label="Primary">
+        <div className="sidebar-nav-label">Workspace</div>
+        {NAV_ITEMS.map((item) => {
           return (
-            <button
-              key={section}
-              type="button"
-              className={active ? "nav-item active" : "nav-item"}
-              onClick={() => onNavChange(section)}
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end
+              className={({ isActive }) => (isActive ? "nav-item active" : "nav-item")}
             >
               <span className="nav-dot" />
-              <span className="nav-item-label">{section}</span>
-              {badge ? <span className="nav-badge">{badge}</span> : null}
-            </button>
+              <span className="nav-item-label">{item.label}</span>
+            </NavLink>
           );
         })}
-      </div>
-
-      <div className="sidebar-coverage-card">
-        <div className="coverage-card-title">Q3 2026 survey</div>
-        <div className="coverage-card-sub">
-          {coverage.respondents} of {coverage.eligible_employees} responses collected · {ratePct}% response rate
-        </div>
-        <div className="coverage-bar-track">
-          <div className="coverage-bar-fill" style={{ width: `${ratePct}%` }} />
-        </div>
-        <div className="coverage-card-foot">{coverage.eligible_employees - coverage.respondents} non-respondents</div>
-      </div>
-    </div>
+      </nav>
+    </aside>
   );
 }

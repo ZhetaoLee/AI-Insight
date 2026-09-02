@@ -3,6 +3,20 @@ import { expect, test } from "@playwright/test";
 test("employee survey submission is reflected in the executive dashboard", async ({ page, request }) => {
   await page.goto("/survey");
 
+  const sidebarLinks = page.locator(".sidebar-nav .nav-item");
+  await expect(page.locator(".dashboard-sidebar")).toBeVisible();
+  await expect(sidebarLinks).toHaveCount(2);
+  await expect(page.getByRole("link", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Survey" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Submit Survey" })).toHaveCount(0);
+  await expect(page.locator(".sidebar-nav").getByText("Adoption", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".sidebar-nav").getByText("Value areas", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".sidebar-nav").getByText("Time saved", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".sidebar-nav").getByText("Output & quality", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".sidebar-nav").getByText("Barriers", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".sidebar-nav").getByText("Respondents", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Q3 2026 survey")).toHaveCount(0);
+
   await page.getByLabel("Your name").selectOption("emp_104");
   await expect(page.locator(".employee-context")).toContainText("Individual Contributor");
   await expect(page.locator(".employee-context")).not.toContainText("Engineering");
@@ -30,14 +44,23 @@ test("employee survey submission is reflected in the executive dashboard", async
   await page.getByRole("link", { name: "Dashboard" }).click();
 
   await expect(page.getByText("Executive overview")).toBeVisible();
+  await expect(page.locator(".dashboard-sidebar")).toHaveCount(1);
+  await expect(sidebarLinks).toHaveCount(2);
+  await expect(page.locator(".dashboard-sidebar").getByText("Q3 2026 survey")).toHaveCount(0);
   await expect(page.getByText(/Small sample:/)).toHaveCount(0);
   await expect(page.getByText(/Rates are directional only/)).toHaveCount(0);
   await expect(page.getByText("Employees", { exact: true })).toBeVisible();
   await expect(page.getByText("Respondents", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("Active AI Users", { exact: true })).toBeVisible();
+  await expect(page.getByText("Response coverage", { exact: true })).toBeVisible();
   await expect(page.locator(".hero-card")).toHaveCount(3);
   await expect(page.locator(".hero-help")).toHaveCount(3);
 
   await page.locator(".hero-help").first().hover();
   await expect(page.locator(".hero-tooltip").first()).toHaveCSS("opacity", "1");
+
+  await page.getByRole("link", { name: "Survey" }).click();
+  await expect(page).toHaveURL(/\/survey$/);
+  await expect(page.locator(".dashboard-sidebar")).toBeVisible();
+  await expect(page.getByText("AI productivity survey")).toBeVisible();
 });

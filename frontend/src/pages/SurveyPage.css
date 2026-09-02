@@ -1,7 +1,7 @@
 .survey-shell {
-  min-height: 100vh;
-  padding: 40px 20px 80px;
+  padding: 30px 26px 40px;
   font-size: 14px;
+  min-width: 0;
 }
 
 .survey-card {
