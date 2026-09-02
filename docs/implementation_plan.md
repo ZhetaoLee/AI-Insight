@@ -19,15 +19,15 @@ This plan breaks the PRD into implementation phases. Use TDD for correctness-sen
 - Tests cover exactly 10 seeded mock employees across Senior Director, Director, Manager, and IC levels.
 - Tests cover hierarchy traversal, manager subtree resolution, level filtering, hierarchy cycle protection, and active survey-cycle filtering.
 
-## Plan 3: Survey Submission API
+## Plan 3: Survey Submission API [Complete]
 
-- Implement `POST /api/survey-responses` test-first.
-- Validate all Q1-Q8 answer codes against the canonical question set.
-- Enforce Q2 exactly three unique ranked areas and unique rank positions.
-- Require `other_text` when Q2, Q7, or Q8 uses `other`.
-- Enforce Q8 `no_major_barriers` exclusivity.
-- Upsert one active response per `(employee_id, survey_cycle)`.
-- Test that clients send only `employee_id` and `answers`; the server populates response IDs, survey cycle, survey version, and submission timestamp.
+- `POST /api/survey-responses` is implemented test-first.
+- Q1-Q8 answer codes are validated against the canonical question set.
+- Q2 exactly three unique ranked areas and unique rank positions are enforced.
+- `other_text` is required when Q2, Q7, or Q8 uses `other`.
+- Q8 `no_major_barriers` exclusivity is enforced.
+- One active response is upserted per `(employee_id, survey_cycle)`.
+- Tests verify clients send only `employee_id` and `answers`; the server populates response IDs, survey cycle, survey version, and submission timestamp.
 
 ## Plan 4: Metrics Engine
 

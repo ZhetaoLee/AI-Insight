@@ -12,6 +12,8 @@ import {
   BARRIERS,
   BIGGEST_BENEFIT,
   CORRECTION_FREQUENCY,
+  NO_MAJOR_BARRIERS_CODE,
+  OTHER_CODE,
   QUALITY_CHANGE,
   TOP_VALUE_AREAS,
   WEEKLY_TIME_SAVED,
@@ -20,7 +22,6 @@ import {
 import "./SurveyPage.css";
 
 const TOP_VALUE_AREA_RANK_COUNT = 3;
-const OTHER_CODE = "other";
 
 type FieldErrors = Partial<
   Record<
@@ -60,6 +61,7 @@ export function SurveyPage() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchEmployees()
@@ -77,8 +79,13 @@ export function SurveyPage() {
   }
 
   function toggleBarrier(code: string) {
-    setBarrierCodes((prev) => (prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]));
+    setBarrierCodes((prev) => {
+      if (prev.includes(code)) return prev.filter((c) => c !== code);
+      if (code === NO_MAJOR_BARRIERS_CODE) return [code];
+      return [...prev.filter((c) => c !== NO_MAJOR_BARRIERS_CODE), code];
+    });
     setErrors((prev) => ({ ...prev, barriers: false, barriers_other: false }));
+    setSubmitError(null);
   }
 
   function resetForm() {
@@ -96,6 +103,7 @@ export function SurveyPage() {
     setBarriersOtherText("");
     setErrors({});
     setSubmitted(false);
+    setSubmitError(null);
   }
 
   const includesOtherArea = topValueAreaCodes.includes(OTHER_CODE);
@@ -103,6 +111,9 @@ export function SurveyPage() {
   const includesOtherBarrier = barrierCodes.includes(OTHER_CODE);
 
   async function handleSubmit() {
+    setSubmitError(null);
+    setSubmitted(false);
+    const hasConflictingBarriers = barrierCodes.includes(NO_MAJOR_BARRIERS_CODE) && barrierCodes.length > 1;
     const nextErrors: FieldErrors = {
       employee: !employeeId,
       ai_usage_frequency: !aiUsageFrequency,
@@ -114,7 +125,7 @@ export function SurveyPage() {
       correction_frequency: !correctionFrequency,
       biggest_benefit: !biggestBenefit,
       biggest_benefit_other: showBiggestBenefitOther && !biggestBenefitOtherText.trim(),
-      barriers: barrierCodes.length === 0,
+      barriers: barrierCodes.length === 0 || hasConflictingBarriers,
       barriers_other: includesOtherBarrier && !barriersOtherText.trim(),
     };
     const hasErrors = Object.values(nextErrors).some(Boolean);
@@ -150,6 +161,8 @@ export function SurveyPage() {
       });
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Unable to submit the survey response.");
     } finally {
       setSubmitting(false);
     }
@@ -337,7 +350,9 @@ export function SurveyPage() {
         </div>
 
         <div className="survey-footer">
-          {hasErrors && <div className="footer-error">Some required questions are still unanswered.</div>}
+          {(hasErrors || submitError) && (
+            <div className="footer-error">{submitError ?? "Some required questions are still unanswered."}</div>
+          )}
           <button type="button" className="submit-btn" onClick={handleSubmit} disabled={submitting}>
             {submitting ? "Submitting…" : "Submit response"}
           </button>

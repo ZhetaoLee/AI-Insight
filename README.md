@@ -74,12 +74,12 @@ Initial implemented endpoints:
 ```text
 GET /health
 GET /api/employees
+POST /api/survey-responses
 ```
 
 Planned endpoints remain documented in `docs/`:
 
 ```text
-POST /api/survey-responses
 GET /api/metrics
 ```
 

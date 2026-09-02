@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ValueAreaRanking } from "../../types/metrics";
+import { OTHER_CODE } from "../../types/survey";
 
 interface ValueAreaRankingCardProps {
   ranking: ValueAreaRanking;
@@ -11,7 +12,7 @@ export function ValueAreaRankingCard({ ranking }: ValueAreaRankingCardProps) {
   const hovered = hoverIdx !== null ? ranking.rows[hoverIdx] : null;
 
   const hint = hovered
-    ? hovered.code === "other" && Object.keys(hovered.otherTexts).length
+    ? hovered.code === OTHER_CODE && Object.keys(hovered.otherTexts).length
       ? "Other · " + Object.entries(hovered.otherTexts).map(([t, c]) => `${t} (${c})`).join(" · ")
       : `${hovered.label} · rank 1: ${hovered.rank1} · rank 2: ${hovered.rank2} · rank 3: ${hovered.rank3}`
     : 'Sorted by total votes, then rank 1, rank 2, rank 3. Hover a row for the rank split; hover "Other" for the submitted text.';

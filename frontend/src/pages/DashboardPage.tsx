@@ -12,6 +12,7 @@ import { ValueAreaRankingCard } from "../components/dashboard/ValueAreaRankingCa
 import type { NavSection } from "../components/dashboard/navSections";
 import { LEVEL_LABELS, type Employee, type EmployeeLevel } from "../types/employee";
 import type { DashboardMetricsResponse, DashboardScope, GroupByField, Q3Q5Criteria } from "../types/metrics";
+import { NO_MAJOR_BARRIERS_CODE } from "../types/survey";
 import "./DashboardPage.css";
 
 const SMALL_SAMPLE_THRESHOLD = 8;
@@ -89,7 +90,7 @@ export function DashboardPage() {
     table: all || navSection === "Adoption" || navSection === "Respondents" || navSection === "Barriers",
   };
 
-  const barrierTotal = metrics.barriers.rows.filter((r) => r.code !== "no_major_barriers").reduce((s, r) => s + r.count, 0);
+  const barrierTotal = metrics.barriers.rows.filter((r) => r.code !== NO_MAJOR_BARRIERS_CODE).reduce((s, r) => s + r.count, 0);
   const groupLabel = groupBy === "department" ? "Department" : "Level";
   const managerName = scopeType === "manager" ? orgEmployees.find((e) => e.id === managerId)?.name ?? "" : "";
   const scopeCaption =

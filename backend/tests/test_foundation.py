@@ -39,6 +39,7 @@ def test_foundation_routes_are_registered():
 
     assert "/health" in route_paths
     assert "/api/employees" in route_paths
+    assert "/api/survey-responses" in route_paths
 
 
 def registered_route_paths(routes):

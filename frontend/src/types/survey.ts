@@ -41,6 +41,9 @@ export interface SurveyResponseSubmission {
   answers: SurveyAnswers;
 }
 
+export const OTHER_CODE = "other";
+export const NO_MAJOR_BARRIERS_CODE = "no_major_barriers";
+
 // Canonical question text, option lists, and answer codes follow docs/Questions.md
 // and docs/PRD.md §8 exactly (both must stay in sync per CLAUDE.md); the §22
 // Survey Response example fixes the nested shapes for ranked/"other" answers.
@@ -64,7 +67,7 @@ export const TOP_VALUE_AREAS: SurveyOption[] = [
   { code: "communication", label: "Communication" },
   { code: "management", label: "Management" },
   { code: "administration", label: "Administration" },
-  { code: "other", label: "Other" },
+  { code: OTHER_CODE, label: "Other" },
 ];
 
 export const WEEKLY_TIME_SAVED: SurveyOption[] = [
@@ -107,7 +110,7 @@ export const BIGGEST_BENEFIT: SurveyOption[] = [
   { code: "supports_better_decisions", label: "Supports better decisions" },
   { code: "helps_explore_ideas", label: "Helps explore ideas" },
   { code: "helps_learn_faster", label: "Helps me learn faster" },
-  { code: "other", label: "Other" },
+  { code: OTHER_CODE, label: "Other" },
 ];
 
 export const BARRIERS: SurveyOption[] = [
@@ -118,6 +121,6 @@ export const BARRIERS: SurveyOption[] = [
   { code: "security_privacy_concerns", label: "Security and privacy concerns" },
   { code: "lack_of_internal_context", label: "Lack of internal context" },
   { code: "poor_workflow_fit", label: "Poor workflow fit" },
-  { code: "no_major_barriers", label: "No major barriers" },
-  { code: "other", label: "Other" },
+  { code: NO_MAJOR_BARRIERS_CODE, label: "No major barriers" },
+  { code: OTHER_CODE, label: "Other" },
 ];

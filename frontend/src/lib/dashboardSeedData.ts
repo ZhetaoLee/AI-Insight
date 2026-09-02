@@ -4,6 +4,8 @@ import {
   BARRIERS,
   BIGGEST_BENEFIT,
   CORRECTION_FREQUENCY,
+  NO_MAJOR_BARRIERS_CODE,
+  OTHER_CODE,
   QUALITY_CHANGE,
   TOP_VALUE_AREAS,
   WEEKLY_TIME_SAVED,
@@ -153,7 +155,7 @@ function areaWeight(code: string, isEngLeaning: boolean): number {
       return 14;
     case "review":
       return 12;
-    case "other":
+    case OTHER_CODE:
       return 1.6;
     default:
       return 9;
@@ -319,24 +321,24 @@ export function buildDashboardSeed(): DashboardSeed {
       chosenAreas.push(c);
       remaining.splice(remaining.findIndex(([code]) => code === c), 1);
     }
-    const areaOtherText = chosenAreas.includes("other")
+    const areaOtherText = chosenAreas.includes(OTHER_CODE)
       ? AREA_OTHER_TEXTS[Math.floor(rnd() * AREA_OTHER_TEXTS.length)]
       : null;
 
     const q7 = !activeUser
-      ? "other"
+      ? OTHER_CODE
       : weightedPick(
           rnd,
           BIGGEST_BENEFIT.map((o) => [o.code, benefitWeight(o.code, sc)] as [string, number])
         );
-    const benefitOtherText = q7 === "other" ? BENEFIT_OTHER_TEXTS[Math.floor(rnd() * BENEFIT_OTHER_TEXTS.length)] : null;
+    const benefitOtherText = q7 === OTHER_CODE ? BENEFIT_OTHER_TEXTS[Math.floor(rnd() * BENEFIT_OTHER_TEXTS.length)] : null;
 
     let barrierCodes: string[];
     let barrierOtherText: string | null = null;
     if (rnd() < 0.06 + sc * 0.22) {
-      barrierCodes = ["no_major_barriers"];
+      barrierCodes = [NO_MAJOR_BARRIERS_CODE];
     } else {
-      const candidates = BARRIERS.filter((o) => o.code !== "no_major_barriers").map(
+      const candidates = BARRIERS.filter((o) => o.code !== NO_MAJOR_BARRIERS_CODE).map(
         (o) => [o.code, barrierWeight(o.code, d.dept, sc)] as [string, number]
       );
       const count = 1 + (rnd() < 0.55 ? 1 : 0) + (rnd() < 0.22 ? 1 : 0);
@@ -348,7 +350,7 @@ export function buildDashboardSeed(): DashboardSeed {
         pool.splice(pool.findIndex(([code]) => code === c), 1);
       }
       barrierCodes = set;
-      if (set.includes("other")) barrierOtherText = BARRIER_OTHER_TEXTS[Math.floor(rnd() * BARRIER_OTHER_TEXTS.length)];
+      if (set.includes(OTHER_CODE)) barrierOtherText = BARRIER_OTHER_TEXTS[Math.floor(rnd() * BARRIER_OTHER_TEXTS.length)];
     }
 
     const answers: SurveyAnswers = {
@@ -356,7 +358,7 @@ export function buildDashboardSeed(): DashboardSeed {
       top_value_areas: chosenAreas.map((area, idx) => ({
         area,
         rank: idx + 1,
-        other_text: area === "other" ? areaOtherText : null,
+        other_text: area === OTHER_CODE ? areaOtherText : null,
       })),
       weekly_time_saved: q3,
       work_output_change: q4,
@@ -365,7 +367,7 @@ export function buildDashboardSeed(): DashboardSeed {
       biggest_benefit: { option: q7, other_text: benefitOtherText },
       barriers: barrierCodes.map((option) => ({
         option,
-        other_text: option === "other" ? barrierOtherText : null,
+        other_text: option === OTHER_CODE ? barrierOtherText : null,
       })),
     };
 

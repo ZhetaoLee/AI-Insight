@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { DashboardMetricsResponse } from "../../types/metrics";
+import { NO_MAJOR_BARRIERS_CODE, OTHER_CODE } from "../../types/survey";
 
 interface PanelRow {
   code: string;
@@ -23,7 +24,7 @@ function PanelCard({ panel }: { panel: PanelDef }) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const hoveredRow = hoverIdx !== null ? panel.rows[hoverIdx] : null;
   const foot =
-    panel.hoverableOther && hoveredRow?.code === "other" && hoveredRow.otherTexts && Object.keys(hoveredRow.otherTexts).length
+    panel.hoverableOther && hoveredRow?.code === OTHER_CODE && hoveredRow.otherTexts && Object.keys(hoveredRow.otherTexts).length
       ? "Other · " + Object.entries(hoveredRow.otherTexts).map(([t, c]) => `${t} (${c})`).join(" · ")
       : panel.foot;
 
@@ -122,7 +123,7 @@ export function DistributionPanels({ metrics, visibleTitles }: DistributionPanel
       denominator: metrics.barriers.denominator,
       rows: metrics.barriers.rows.map((r, idx) => ({
         ...r,
-        color: r.code === "no_major_barriers" ? BARRIER_GRAY : idx === 0 ? DARK_GREEN : GREEN,
+        color: r.code === NO_MAJOR_BARRIERS_CODE ? BARRIER_GRAY : idx === 0 ? DARK_GREEN : GREEN,
       })),
       foot: 'One respondent may contribute to several barriers, so shares exceed 100%. "No major barriers" is exclusive.',
       hoverableOther: true,

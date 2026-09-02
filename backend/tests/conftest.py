@@ -42,3 +42,27 @@ def response_documents() -> list[dict]:
 @pytest.fixture
 def active_survey_cycle() -> str:
     return "2026-h2"
+
+
+@pytest.fixture
+def valid_survey_submission() -> dict:
+    return {
+        "employee_id": "emp_104",
+        "answers": {
+            "ai_usage_frequency": "daily",
+            "top_value_areas": [
+                {"area": "implementation", "rank": 1, "other_text": None},
+                {"area": "research", "rank": 2, "other_text": None},
+                {"area": "troubleshooting", "rank": 3, "other_text": None},
+            ],
+            "weekly_time_saved": "more_than_5_hours",
+            "work_output_change": "significantly_more",
+            "quality_change": "slightly_better",
+            "correction_frequency": "sometimes",
+            "biggest_benefit": {"option": "saves_time", "other_text": None},
+            "barriers": [
+                {"option": "lack_of_internal_context", "other_text": None},
+                {"option": "review_effort", "other_text": None},
+            ],
+        },
+    }

@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.db import connect_to_mongo, ensure_indexes
 from app.repositories.seed import seed_employees
-from app.routers import employees, health
+from app.routers import employees, health, survey_responses
 
 
 @asynccontextmanager
@@ -37,6 +37,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(health.router)
     app.include_router(employees.router, prefix="/api")
+    app.include_router(survey_responses.router, prefix="/api")
     return app
 
 
