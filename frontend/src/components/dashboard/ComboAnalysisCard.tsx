@@ -14,14 +14,15 @@ interface ComboAnalysisCardProps {
 export function ComboAnalysisCard({ analysis, onChange }: ComboAnalysisCardProps) {
   const ratePct = Math.round(analysis.matching_rate * 100);
   const deg = Math.round(ratePct * 3.6);
-  const note = 'Denominator excludes anyone who answered "Not sure" on Q3, Q4, or Q5, or has no answer for any of them.';
+  const note =
+    'Denominator excludes anyone who answered "Not sure" on Weekly time saved, Work output impact, and Work quality impact.';
   const helpText =
     "Select one answer for time saved, output, and quality to see how often all three outcomes happen together.";
 
   const selectors = [
-    { label: "Q3 · Weekly time saved", options: ANALYSIS_WEEKLY_TIME_SAVED, value: analysis.criteria.weekly_time_saved, key: "weekly_time_saved" as const },
-    { label: "Q4 · Work output impact", options: ANALYSIS_WORK_OUTPUT_CHANGE, value: analysis.criteria.work_output_change, key: "work_output_change" as const },
-    { label: "Q5 · Work quality impact", options: ANALYSIS_QUALITY_CHANGE, value: analysis.criteria.quality_change, key: "quality_change" as const },
+    { label: "Weekly time saved", options: ANALYSIS_WEEKLY_TIME_SAVED, value: analysis.criteria.weekly_time_saved, key: "weekly_time_saved" as const },
+    { label: "Work output impact", options: ANALYSIS_WORK_OUTPUT_CHANGE, value: analysis.criteria.work_output_change, key: "work_output_change" as const },
+    { label: "Work quality impact", options: ANALYSIS_QUALITY_CHANGE, value: analysis.criteria.quality_change, key: "quality_change" as const },
   ];
 
   return (

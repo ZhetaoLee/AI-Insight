@@ -627,6 +627,27 @@ test("combo analysis card uses a leadership title and shared help tooltip", asyn
   assert.equal(dashboardStyles.includes(".combo-card-head"), true);
 });
 
+test("combo analysis card selectors and note use plain question names, not Q3/Q4/Q5 labels", async () => {
+  const comboCardSource = await readFile(
+    new URL("../src/components/dashboard/ComboAnalysisCard.tsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.equal(comboCardSource.includes('"Q3 ·'), false);
+  assert.equal(comboCardSource.includes('"Q4 ·'), false);
+  assert.equal(comboCardSource.includes('"Q5 ·'), false);
+  assert.equal(comboCardSource.includes('label: "Weekly time saved"'), true);
+  assert.equal(comboCardSource.includes('label: "Work output impact"'), true);
+  assert.equal(comboCardSource.includes('label: "Work quality impact"'), true);
+  assert.equal(
+    comboCardSource.includes(
+      'Denominator excludes anyone who answered "Not sure" on Weekly time saved, Work output impact, and Work quality impact.'
+    ),
+    true
+  );
+  assert.equal(comboCardSource.includes("or has no answer for any of them"), false);
+});
+
 test("value area ranking card uses contextual help and row-level rank details", async () => {
   const [valueAreaSource, dashboardStyles] = await Promise.all([
     readFile(new URL("../src/components/dashboard/ValueAreaRankingCard.tsx", import.meta.url), "utf8"),
