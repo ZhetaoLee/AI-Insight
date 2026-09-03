@@ -20,7 +20,6 @@ export function EmployeePicker({
   error,
 }: EmployeePickerProps) {
   const selected = contextEmployees.find((e) => e.id === value) ?? null;
-  const manager = selected?.manager_id ? contextEmployees.find((e) => e.id === selected.manager_id) ?? null : null;
   const hasAvailableEmployees = employees.length > 0;
 
   return (
@@ -50,7 +49,6 @@ export function EmployeePicker({
       {selected ? (
         <div className="employee-context">
           <strong>{LEVEL_LABELS[selected.level]}</strong>
-          {manager ? <>{" "}· Manager: {manager.name}</> : null}
         </div>
       ) : null}
     </div>

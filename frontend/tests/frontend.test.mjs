@@ -336,6 +336,16 @@ test("employee data and selectors omit unsupported department context", async ()
   assert.equal(dashboardToolbarSource.includes(".department"), false);
 });
 
+test("survey employee picker context shows only the employee's own role", async () => {
+  const employeePickerSource = await readFile(
+    new URL("../src/components/survey/EmployeePicker.tsx", import.meta.url),
+    "utf8"
+  );
+
+  assert.equal(employeePickerSource.includes("Manager:"), false);
+  assert.equal(employeePickerSource.includes("manager_id"), false);
+});
+
 test("survey page filters employees who already submitted this cycle", async () => {
   const [surveyPageSource, employeePickerSource] = await Promise.all([
     readFile(new URL("../src/pages/SurveyPage.tsx", import.meta.url), "utf8"),

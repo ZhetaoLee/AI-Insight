@@ -194,10 +194,10 @@ Your Name
 [Alice Chen ▼]
 
 Individual Contributor
-Manager: David Kim
 ```
 
-Level and manager are retrieved from the employee record and are not editable.
+Level is retrieved from the employee record and is not editable; only the
+employee's own role is shown, not their manager or teammates.
 
 This prevents inconsistent organizational data from being submitted through the survey.
 
