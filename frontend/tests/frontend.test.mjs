@@ -328,6 +328,21 @@ test("hierarchy toggle button label names the currently selected scope instead o
   assert.equal(layoutSource.includes("${LEVEL_LABELS[selectedHierarchyEmployee.level]} Dashboard"), true);
 });
 
+test("dashboard scope toggle is visually prominent, not styled like a minor utility button", async () => {
+  const dashboardStyles = await readFile(new URL("../src/pages/DashboardPage.css", import.meta.url), "utf8");
+
+  const toggleBtnMatch = dashboardStyles.match(/\.toggle-btn\s*\{[\s\S]*?\}/);
+  const toggleActiveMatch = dashboardStyles.match(/\.toggle-btn\.active\s*\{[\s\S]*?\}/);
+  const resetBtnMatch = dashboardStyles.match(/\.reset-scope-btn\s*\{[\s\S]*?\}/);
+
+  assert.equal(toggleBtnMatch[0].includes("font-size: 14px"), true);
+  assert.equal(toggleActiveMatch[0].includes("var(--db-accent-dark)"), true);
+  assert.equal(toggleActiveMatch[0].includes("#eef8f4"), true);
+  // the scope toggle should read as more visually significant than a one-off
+  // utility action like "Reset scope", which stays at the old small size
+  assert.equal(resetBtnMatch[0].includes("font-size: 12.5px"), true);
+});
+
 test("org hierarchy tree lives in the persistent sidebar, not the dashboard toolbar", async () => {
   const [toolbarSource, dashboardPageSource, sidebarSource, layoutSource, layoutStyles, dashboardStyles] = await Promise.all([
     readFile(new URL("../src/components/dashboard/DashboardToolbar.tsx", import.meta.url), "utf8"),
