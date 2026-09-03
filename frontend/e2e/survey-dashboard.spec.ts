@@ -68,6 +68,18 @@ test("employee survey submission is reflected in the executive dashboard", async
   await page.getByRole("button", { name: "Lack of training" }).click();
   await page.getByRole("button", { name: "Submit response" }).click();
 
+  const confirmDialog = page.getByRole("alertdialog", { name: "Are you ready to submit?" });
+  await expect(confirmDialog).toBeVisible();
+  await expect(confirmDialog).toContainText("Your answer cannot be changed after you submit your survey.");
+  await confirmDialog.getByRole("button", { name: "Cancel" }).click();
+  await expect(confirmDialog).toHaveCount(0);
+  await expect(page.getByText("Your response is recorded")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Submit response" })).toBeFocused();
+
+  await page.getByRole("button", { name: "Submit response" }).click();
+  await expect(confirmDialog).toBeVisible();
+  await confirmDialog.getByRole("button", { name: "Submit" }).click();
+
   await expect(page.getByText("Your response is recorded")).toBeVisible();
   await expect(page.locator("#employee-picker option", { hasText: "Alice Chen" })).toHaveCount(0);
   await expect(page.getByLabel("Your name")).toHaveValue("");

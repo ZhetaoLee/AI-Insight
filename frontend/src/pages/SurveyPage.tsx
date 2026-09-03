@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchEmployees } from "../api/employees";
 import { fetchSubmittedEmployeeIds, submitSurveyResponse } from "../api/survey";
 import { EmployeePicker } from "../components/survey/EmployeePicker";
@@ -6,6 +6,7 @@ import { MultiSelectQuestion } from "../components/survey/MultiSelectQuestion";
 import { OtherTextInput } from "../components/survey/OtherTextInput";
 import { RankQuestion } from "../components/survey/RankQuestion";
 import { SingleSelectQuestion } from "../components/survey/SingleSelectQuestion";
+import { SubmitConfirmDialog } from "../components/survey/SubmitConfirmDialog";
 import {
   buildSurveyResponseSubmission,
   hasSurveyErrors,
@@ -54,6 +55,8 @@ export function SurveyPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
 
   const refreshSubmittedEmployeeIds = useCallback(async () => {
     try {
@@ -156,7 +159,7 @@ export function SurveyPage() {
     barriersOtherText,
   };
 
-  async function handleSubmit() {
+  function requestSubmit() {
     setSubmitError(null);
     setSubmitted(false);
     const nextErrors = validateSurveyForm(formState);
@@ -166,6 +169,16 @@ export function SurveyPage() {
       return;
     }
 
+    setShowSubmitConfirm(true);
+  }
+
+  function cancelSubmit() {
+    setShowSubmitConfirm(false);
+    submitButtonRef.current?.focus();
+  }
+
+  async function confirmSubmit() {
+    setShowSubmitConfirm(false);
     setSubmitting(true);
     try {
       const submittedEmployeeId = formState.employeeId!;
@@ -197,7 +210,6 @@ export function SurveyPage() {
             <span className="survey-meta">8 questions</span>
           </div>
           <p className="survey-subtitle">
-            Responses are reported in aggregate and used to prioritise AI tooling, training, and investment.{" "}
             <span style={{ color: "var(--color-muted-2)" }}>*required fields</span>
           </p>
         </div>
@@ -234,7 +246,6 @@ export function SurveyPage() {
 
         <div className="survey-group">
           <h2 className="group-title">Usage and value</h2>
-          <p className="group-subtitle">How often you use AI, where it helps most, and time saved.</p>
 
           <SingleSelectQuestion
             legend="Q1. How often do you currently use AI for work?"
@@ -269,7 +280,7 @@ export function SurveyPage() {
           </div>
 
           <SingleSelectQuestion
-            legend="Q3. In a typical week, approximately how much work time does AI save you?"
+            legend="Q3. Compared with working without AI, approximately how much work time does AI save you in a typical week?"
             options={WEEKLY_TIME_SAVED}
             value={weeklyTimeSaved}
             onChange={(v) => {
@@ -282,7 +293,6 @@ export function SurveyPage() {
 
         <div className="survey-group">
           <h2 className="group-title">Impact on your work</h2>
-          <p className="group-subtitle">Output, quality, and how much correction AI output needs.</p>
 
           <SingleSelectQuestion
             legend="Q4. Compared with working without AI, how has AI affected the amount of work you can complete in the same amount of time?"
@@ -321,7 +331,6 @@ export function SurveyPage() {
 
         <div className="survey-group">
           <h2 className="group-title">Benefits and barriers</h2>
-          <p className="group-subtitle">The single biggest benefit, and what limits effective use.</p>
 
           <div className="field">
             <SingleSelectQuestion
@@ -373,11 +382,18 @@ export function SurveyPage() {
           {(hasErrors || submitError) && (
             <div className="footer-error">{submitError ?? "Some required questions are still unanswered."}</div>
           )}
-          <button type="button" className="submit-btn" onClick={handleSubmit} disabled={submitting}>
+          <button
+            ref={submitButtonRef}
+            type="button"
+            className="submit-btn"
+            onClick={requestSubmit}
+            disabled={submitting}
+          >
             {submitting ? "Submitting…" : "Submit response"}
           </button>
         </div>
       </div>
+      {showSubmitConfirm && <SubmitConfirmDialog onCancel={cancelSubmit} onConfirm={confirmSubmit} />}
     </div>
   );
 }

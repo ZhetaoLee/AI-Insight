@@ -420,6 +420,68 @@ test("survey page removes the current submitter from the picker immediately", as
   assert.equal(surveyPageSource.includes("employee.id === employeeId"), false);
 });
 
+test("Q3 wording matches the compared-with-working-without-AI framing, docs stay in sync", async () => {
+  const [surveyPageSource, prdSource, questionsSource] = await Promise.all([
+    readFile(new URL("../src/pages/SurveyPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../../docs/PRD.md", import.meta.url), "utf8"),
+    readFile(new URL("../../docs/Questions.md", import.meta.url), "utf8"),
+  ]);
+
+  const q3Text = "Compared with working without AI, approximately how much work time does AI save you in a typical week?";
+
+  assert.equal(surveyPageSource.includes(q3Text), true);
+  assert.equal(prdSource.includes(q3Text), true);
+  assert.equal(questionsSource.includes(q3Text), true);
+});
+
+test("survey page removes filler subtitle copy", async () => {
+  const surveyPageSource = await readFile(new URL("../src/pages/SurveyPage.tsx", import.meta.url), "utf8");
+
+  assert.equal(
+    surveyPageSource.includes("Responses are reported in aggregate and used to prioritise AI tooling, training, and investment."),
+    false
+  );
+  assert.equal(surveyPageSource.includes("How often you use AI, where it helps most, and time saved."), false);
+  assert.equal(surveyPageSource.includes("Output, quality, and how much correction AI output needs."), false);
+  assert.equal(surveyPageSource.includes("The single biggest benefit, and what limits effective use."), false);
+  assert.equal(surveyPageSource.includes("*required fields"), true);
+  assert.equal(surveyPageSource.includes("Select your name to load your level."), true);
+});
+
+test("survey page title and other font sizes match app-wide conventions", async () => {
+  const surveyStyles = await readFile(new URL("../src/pages/SurveyPage.css", import.meta.url), "utf8");
+
+  const titleMatch = surveyStyles.match(/\.survey-title\s*\{[\s\S]*?\}/);
+  const groupTitleMatch = surveyStyles.match(/\.group-title\s*\{[\s\S]*?\}/);
+  const likertMatch = surveyStyles.match(/\.radio-option-likert\s*\{[\s\S]*?\}/);
+
+  assert.equal(titleMatch[0].includes("font-size: 24px"), true);
+  assert.equal(groupTitleMatch[0].includes("font-size: 17px"), true);
+  assert.equal(likertMatch[0].includes("font-size: 14px"), true);
+});
+
+test("survey submission requires confirming a popup before it is sent", async () => {
+  const [surveyPageSource, dialogSource] = await Promise.all([
+    readFile(new URL("../src/pages/SurveyPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/survey/SubmitConfirmDialog.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.equal(surveyPageSource.includes("SubmitConfirmDialog"), true);
+  assert.equal(surveyPageSource.includes("showSubmitConfirm"), true);
+  assert.equal(surveyPageSource.includes("onClick={requestSubmit}"), true);
+  assert.equal(surveyPageSource.includes("submitSurveyResponse(buildSurveyResponseSubmission(formState))"), true);
+
+  assert.equal(dialogSource.includes("Are you ready to submit?"), true);
+  assert.equal(dialogSource.includes("Your answer cannot be changed after you submit your survey."), true);
+  assert.equal(dialogSource.includes('role="alertdialog"'), true);
+  assert.equal(dialogSource.includes('aria-modal="true"'), true);
+  assert.equal(dialogSource.includes("aria-labelledby="), true);
+  assert.equal(dialogSource.includes("aria-describedby="), true);
+  assert.equal(dialogSource.includes('"Escape"'), true);
+  assert.equal(/>\s*Cancel\s*</.test(dialogSource), true);
+  assert.equal(/>\s*Submit\s*</.test(dialogSource), true);
+});
+
 test("survey submitted employee status uses backend data and local fallback", async () => {
   await withMockFetch(
     async (url) => {

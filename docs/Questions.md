@@ -54,7 +54,7 @@ If `other` is selected, `other_text` is required.
 
 ## Q3. Weekly Time Saved [Single Choice]
 
-In a typical week, approximately how much work does AI save you?
+Compared with working without AI, approximately how much work time does AI save you in a typical week?
 
 - `no_noticeable_time_saved`: No noticeable time saved
 - `less_than_1_hour`: Less than 1 hour

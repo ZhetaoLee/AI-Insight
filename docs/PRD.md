@@ -258,7 +258,7 @@ Identify where AI creates the greatest workflow value.
 
 ## Q3. Weekly Time Saved
 
-**In a typical week, approximately how much work time does AI save you?**
+**Compared with working without AI, approximately how much work time does AI save you in a typical week?**
 
 Options:
 
