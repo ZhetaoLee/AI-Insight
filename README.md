@@ -76,7 +76,21 @@ This points at an AWS Lightsail instance.
 ## Assumptions
 
 - MongoDB is the source of truth for employees and survey responses; metrics are computed at read time from raw responses rather than stored as precomputed scores, so metric definitions can evolve without rewriting history.
-- Seed data is deterministic and contains exactly 10 mock employees across the required hierarchy levels (Senior Director, Director, Manager, Individual Contributor), standing in for the ~50-person real organization described in the PRD.
+- Seed data is deterministic and contains exactly 10 mock employees across the required hierarchy levels (Senior Director, Director, Manager, Individual Contributor), standing in for the ~50-person real organization described in the PRD. The fixed hierarchy, by name and role, is:
+
+  ```text
+  Organization
+  └── Priya Nair — Senior Director
+      ├── Sarah Lee — Director
+      │   └── David Kim — Manager
+      │       ├── Alice Chen — Individual Contributor
+      │       └── Marcus Webb — Individual Contributor
+      └── Elena Ruiz — Director
+          ├── Noah Patel — Manager
+          │   └── Jade Thompson — Individual Contributor
+          └── Omar Farouk — Manager
+              └── Grace Liu — Individual Contributor
+  ```
 - Dashboard metrics are computed and owned entirely by the backend; the frontend renders precomputed, presentation-ready values and never re-derives adoption/quality/productivity rules from raw answer codes.
 - Department is intentionally absent from this version's employee data model and is not a supported metrics scope.
 - "Not sure" answers (e.g. Q3 weekly time saved) are treated as missing data and excluded from the relevant analysis, not converted into an estimated value of zero.
