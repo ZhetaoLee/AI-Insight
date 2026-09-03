@@ -285,6 +285,7 @@ Options:
 - Same
 - Slightly more
 - Significantly more
+- Not sure
 
 Purpose:
 
@@ -303,6 +304,7 @@ Options:
 - No meaningful change
 - Slightly better
 - Much better
+- Not sure
 
 Purpose:
 
@@ -321,6 +323,7 @@ Options:
 - Sometimes
 - Often
 - Almost always
+- Not sure
 
 Purpose:
 
@@ -527,7 +530,7 @@ analysis_denominator = respondents with valid answers for all selected questions
 matching_rate = matching_count / analysis_denominator
 ```
 
-If Q3 is part of the analysis, exclude `Not sure` from the denominator.
+Q4 and Q5 also accept `Not sure` as an answer, matching Q3. Exclude any respondent who answered `Not sure` on Q3, Q4, or Q5 from `analysis_denominator` — a respondent isn't a meaningful match for a specific outcome combination if any piece of it is unknown to them. This exclusion only applies to this combined analysis; each question's own individual distribution (e.g. Q4's own "Output impact" chart) still counts a `Not sure` answer as a normal, real response in its own denominator (see `docs/metrics.md`'s Missing Data Rule).
 
 ---
 

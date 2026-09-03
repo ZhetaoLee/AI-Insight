@@ -55,6 +55,12 @@ test("employee survey submission is reflected in the executive dashboard", async
   await page.getByRole("button", { name: "Research" }).click();
   await page.getByRole("button", { name: "Testing" }).click();
   await page.getByRole("button", { name: "More than 5 hours" }).click();
+
+  const q4Options = page.locator(".option-likert").first().locator(".radio-option-likert");
+  await expect(q4Options).toHaveCount(6);
+  const q4Boxes = await q4Options.evaluateAll((buttons) => buttons.map((b) => b.getBoundingClientRect().y));
+  expect(new Set(q4Boxes.map((y) => Math.round(y))).size).toBe(1);
+
   await page.getByRole("button", { name: "Significantly more" }).click();
   await page.getByRole("button", { name: "Slightly better" }).click();
   await page.getByRole("button", { name: "Sometimes" }).click();

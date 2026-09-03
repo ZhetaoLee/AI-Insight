@@ -11,7 +11,11 @@ import {
 import { SEED_EMPLOYEES, fetchEmployees } from "../src/api/employees.ts";
 import { fetchDashboardMetrics, fetchOrgDirectory } from "../src/api/metrics.ts";
 import { fetchSubmittedEmployeeIds, submitSurveyResponse } from "../src/api/survey.ts";
-import { ANALYSIS_WEEKLY_TIME_SAVED } from "../src/components/dashboard/ComboAnalysisCard.tsx";
+import {
+  ANALYSIS_QUALITY_CHANGE,
+  ANALYSIS_WEEKLY_TIME_SAVED,
+  ANALYSIS_WORK_OUTPUT_CHANGE,
+} from "../src/components/dashboard/ComboAnalysisCard.tsx";
 import { topActualBarrierRow } from "../src/components/dashboard/DistributionPanels.tsx";
 import { topBarrierLabel } from "../src/components/dashboard/RecordsTable.tsx";
 import { buildChildrenMap, resolveDashboardManagerId, subtreeOf } from "../src/lib/dashboardScope.ts";
@@ -181,8 +185,10 @@ test("dashboard metrics omits scope_id for org requests", async () => {
   assert.equal(params.has("scope_id"), false);
 });
 
-test("dashboard Q3-Q5 analysis excludes not_sure from selectable Q3 criteria", () => {
+test("dashboard Q3-Q5 analysis excludes not_sure from selectable Q3, Q4, and Q5 criteria", () => {
   const q3CriteriaCodes = ANALYSIS_WEEKLY_TIME_SAVED.map((option) => option.code);
+  const q4CriteriaCodes = ANALYSIS_WORK_OUTPUT_CHANGE.map((option) => option.code);
+  const q5CriteriaCodes = ANALYSIS_QUALITY_CHANGE.map((option) => option.code);
 
   assert.deepEqual(q3CriteriaCodes, [
     "no_noticeable_time_saved",
@@ -191,6 +197,37 @@ test("dashboard Q3-Q5 analysis excludes not_sure from selectable Q3 criteria", (
     "more_than_5_hours",
   ]);
   assert.equal(q3CriteriaCodes.includes("not_sure"), false);
+  assert.equal(q4CriteriaCodes.includes("not_sure"), false);
+  assert.equal(q5CriteriaCodes.includes("not_sure"), false);
+});
+
+test("Q4, Q5, and Q6 accept a not_sure answer like Q3 does", async () => {
+  const [surveyTypesSource, distributionPanelsSource] = await Promise.all([
+    readFile(new URL("../src/types/survey.ts", import.meta.url), "utf8"),
+    readFile(new URL("../src/components/dashboard/DistributionPanels.tsx", import.meta.url), "utf8"),
+  ]);
+
+  const workOutputMatch = surveyTypesSource.match(/WORK_OUTPUT_CHANGE[\s\S]*?\];/);
+  const qualityMatch = surveyTypesSource.match(/QUALITY_CHANGE[\s\S]*?\];/);
+  const correctionMatch = surveyTypesSource.match(/CORRECTION_FREQUENCY[\s\S]*?\];/);
+
+  assert.equal(workOutputMatch[0].includes('"not_sure"'), true);
+  assert.equal(qualityMatch[0].includes('"not_sure"'), true);
+  assert.equal(correctionMatch[0].includes('"not_sure"'), true);
+
+  // "Not sure" is neither a positive nor negative signal on these panels, so
+  // it must be colored gray, matching the existing Q3 "Time saved" pattern,
+  // rather than falling through to the index-based RED/GREEN logic.
+  const notSureColorChecks = distributionPanelsSource.match(/r\.code === "not_sure" \? GRAY/g) ?? [];
+  assert.equal(notSureColorChecks.length, 4);
+});
+
+test("Q4-Q6 likert grid has enough columns for all six options on one row", async () => {
+  const surveyStyles = await readFile(new URL("../src/pages/SurveyPage.css", import.meta.url), "utf8");
+  const likertMatch = surveyStyles.match(/\.option-likert\s*\{[\s\S]*?\}/);
+
+  assert.equal(likertMatch[0].includes("grid-template-columns: repeat(6, 1fr)"), true);
+  assert.equal(likertMatch[0].includes("repeat(5, 1fr)"), false);
 });
 
 test("dashboard metrics does not use local fallback for backend errors", async () => {

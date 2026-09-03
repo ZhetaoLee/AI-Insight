@@ -72,6 +72,7 @@ complete in the same amount of time?
 - `same`: Same
 - `slightly_more`: Slightly more
 - `significantly_more`: Significantly more
+- `not_sure`: Not sure
 
 ## Q5. Work Quality Impact [Single Choice]
 
@@ -82,6 +83,7 @@ How has AI affected the quality of your work?
 - `no_meaningful_change`: No meaningful change
 - `slightly_better`: Slightly better
 - `much_better`: Much better
+- `not_sure`: Not sure
 
 ## Q6. AI Rework Frequency [Single Choice]
 
@@ -93,6 +95,7 @@ using it?
 - `sometimes`: Sometimes
 - `often`: Often
 - `almost_always`: Almost always
+- `not_sure`: Not sure
 
 ## Q7. Biggest AI Benefit [Single Choice]
 

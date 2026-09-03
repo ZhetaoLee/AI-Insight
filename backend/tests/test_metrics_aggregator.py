@@ -102,6 +102,100 @@ def test_aggregate_dynamic_q3_q5_analysis_excludes_not_sure(metric_employees, me
     assert metrics.q3_q5_analysis.matching_rate == pytest.approx(1 / 3)
 
 
+def test_aggregate_dynamic_q3_q5_analysis_excludes_not_sure_on_q4_and_q5(metric_employees):
+    responses = [
+        response(
+            "resp_301",
+            "emp_201",
+            q1="daily",
+            q2=[("implementation", 1, None), ("research", 2, None), ("testing", 3, None)],
+            q3="more_than_5_hours",
+            q4="slightly_more",
+            q5="slightly_better",
+            q6="sometimes",
+            q7=("saves_time", None),
+            q8=[("lack_of_training", None)],
+        ),
+        response(
+            "resp_302",
+            "emp_202",
+            q1="daily",
+            q2=[("research", 1, None), ("implementation", 2, None), ("testing", 3, None)],
+            q3="more_than_5_hours",
+            q4="not_sure",
+            q5="slightly_better",
+            q6="sometimes",
+            q7=("saves_time", None),
+            q8=[("lack_of_training", None)],
+        ),
+        response(
+            "resp_303",
+            "emp_203",
+            q1="daily",
+            q2=[("research", 1, None), ("implementation", 2, None), ("testing", 3, None)],
+            q3="more_than_5_hours",
+            q4="slightly_more",
+            q5="not_sure",
+            q6="sometimes",
+            q7=("saves_time", None),
+            q8=[("lack_of_training", None)],
+        ),
+    ]
+
+    metrics = aggregate(metric_employees, responses)
+
+    # Only resp_301 has real answers for Q3, Q4, and Q5; resp_302's Q4 and
+    # resp_303's Q5 are "not_sure" and must be excluded from the denominator,
+    # not just a "not_sure" on Q3.
+    assert metrics.q3_q5_analysis.analysis_denominator == 1
+    assert metrics.q3_q5_analysis.matching_count == 1
+    assert metrics.q3_q5_analysis.matching_rate == pytest.approx(1.0)
+
+
+def test_aggregate_not_sure_counts_toward_own_question_denominator_not_excluded(metric_employees):
+    responses = [
+        response(
+            "resp_401",
+            "emp_201",
+            q1="daily",
+            q2=[("implementation", 1, None), ("research", 2, None), ("testing", 3, None)],
+            q3="more_than_5_hours",
+            q4="slightly_more",
+            q5="slightly_better",
+            q6="sometimes",
+            q7=("saves_time", None),
+            q8=[("lack_of_training", None)],
+        ),
+        response(
+            "resp_402",
+            "emp_202",
+            q1="daily",
+            q2=[("research", 1, None), ("implementation", 2, None), ("testing", 3, None)],
+            q3="more_than_5_hours",
+            q4="not_sure",
+            q5="not_sure",
+            q6="not_sure",
+            q7=("saves_time", None),
+            q8=[("lack_of_training", None)],
+        ),
+    ]
+
+    metrics = aggregate(metric_employees, responses)
+
+    # A "not_sure" answer is a real answer: it counts toward each question's
+    # own distribution denominator (unlike being excluded from the combined
+    # Q3-Q5 analysis above), it appears as its own row, and it never counts
+    # toward the positive-signal rate numerator.
+    assert metrics.work_output.denominator == 2
+    assert metrics.work_output.rows_by_code["not_sure"].count == 1
+    assert metrics.work_quality.denominator == 2
+    assert metrics.work_quality.rows_by_code["not_sure"].count == 1
+    assert metrics.ai_rework_frequency.denominator == 2
+    assert metrics.ai_rework_frequency.rows_by_code["not_sure"].count == 1
+    assert metrics.headline_metrics.reports_more_output.denominator == 2
+    assert metrics.headline_metrics.reports_more_output.count == 1
+
+
 def test_weekly_time_saved_keeps_bucket_distribution_without_hour_estimates(metric_employees):
     responses = [
         response(
@@ -279,6 +373,24 @@ def test_q3_q5_criteria_rejects_not_sure_weekly_time_saved():
             weekly_time_saved="not_sure",
             work_output_change="slightly_more",
             quality_change="slightly_better",
+        )
+
+
+def test_q3_q5_criteria_rejects_not_sure_work_output_change():
+    with pytest.raises(ValidationError, match="not_sure"):
+        Q3Q5Criteria(
+            weekly_time_saved="more_than_5_hours",
+            work_output_change="not_sure",
+            quality_change="slightly_better",
+        )
+
+
+def test_q3_q5_criteria_rejects_not_sure_quality_change():
+    with pytest.raises(ValidationError, match="not_sure"):
+        Q3Q5Criteria(
+            weekly_time_saved="more_than_5_hours",
+            work_output_change="slightly_more",
+            quality_change="not_sure",
         )
 
 

@@ -175,7 +175,7 @@
 
 .option-likert {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 8px;
   border-top: 1px solid var(--color-border-3);
   border-bottom: 1px solid var(--color-border-3);

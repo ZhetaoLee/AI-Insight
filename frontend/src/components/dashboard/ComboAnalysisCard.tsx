@@ -3,6 +3,8 @@ import type { Q3Q5Analysis, Q3Q5Criteria } from "../../types/metrics";
 import { InfoTooltip } from "./InfoTooltip";
 
 export const ANALYSIS_WEEKLY_TIME_SAVED = WEEKLY_TIME_SAVED.filter((option) => option.code !== "not_sure");
+export const ANALYSIS_WORK_OUTPUT_CHANGE = WORK_OUTPUT_CHANGE.filter((option) => option.code !== "not_sure");
+export const ANALYSIS_QUALITY_CHANGE = QUALITY_CHANGE.filter((option) => option.code !== "not_sure");
 
 interface ComboAnalysisCardProps {
   analysis: Q3Q5Analysis;
@@ -12,14 +14,14 @@ interface ComboAnalysisCardProps {
 export function ComboAnalysisCard({ analysis, onChange }: ComboAnalysisCardProps) {
   const ratePct = Math.round(analysis.matching_rate * 100);
   const deg = Math.round(ratePct * 3.6);
-  const note = 'Denominator excludes "Not sure" on Q3 and anyone missing an answer to Q3, Q4, or Q5.';
+  const note = 'Denominator excludes anyone who answered "Not sure" on Q3, Q4, or Q5, or has no answer for any of them.';
   const helpText =
     "Select one answer for time saved, output, and quality to see how often all three outcomes happen together.";
 
   const selectors = [
     { label: "Q3 · Weekly time saved", options: ANALYSIS_WEEKLY_TIME_SAVED, value: analysis.criteria.weekly_time_saved, key: "weekly_time_saved" as const },
-    { label: "Q4 · Work output impact", options: WORK_OUTPUT_CHANGE, value: analysis.criteria.work_output_change, key: "work_output_change" as const },
-    { label: "Q5 · Work quality impact", options: QUALITY_CHANGE, value: analysis.criteria.quality_change, key: "quality_change" as const },
+    { label: "Q4 · Work output impact", options: ANALYSIS_WORK_OUTPUT_CHANGE, value: analysis.criteria.work_output_change, key: "work_output_change" as const },
+    { label: "Q5 · Work quality impact", options: ANALYSIS_QUALITY_CHANGE, value: analysis.criteria.quality_change, key: "quality_change" as const },
   ];
 
   return (

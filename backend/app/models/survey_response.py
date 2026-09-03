@@ -18,9 +18,9 @@ TopValueArea = Literal[
     "other",
 ]
 WeeklyTimeSaved = Literal["no_noticeable_time_saved", "less_than_1_hour", "1_5_hours", "more_than_5_hours", "not_sure"]
-WorkOutputChange = Literal["much_less", "slightly_less", "same", "slightly_more", "significantly_more"]
-QualityChange = Literal["much_worse", "slightly_worse", "no_meaningful_change", "slightly_better", "much_better"]
-CorrectionFrequency = Literal["almost_never", "rarely", "sometimes", "often", "almost_always"]
+WorkOutputChange = Literal["much_less", "slightly_less", "same", "slightly_more", "significantly_more", "not_sure"]
+QualityChange = Literal["much_worse", "slightly_worse", "no_meaningful_change", "slightly_better", "much_better", "not_sure"]
+CorrectionFrequency = Literal["almost_never", "rarely", "sometimes", "often", "almost_always", "not_sure"]
 BiggestBenefit = Literal[
     "saves_time",
     "reduces_repetitive_work",

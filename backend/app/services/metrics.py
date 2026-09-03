@@ -65,6 +65,7 @@ WORK_OUTPUT_CHANGE: tuple[Option, ...] = (
     ("same", "Same"),
     ("slightly_more", "Slightly more"),
     ("significantly_more", "Significantly more"),
+    ("not_sure", "Not sure"),
 )
 QUALITY_CHANGE: tuple[Option, ...] = (
     ("much_worse", "Much worse"),
@@ -72,6 +73,7 @@ QUALITY_CHANGE: tuple[Option, ...] = (
     ("no_meaningful_change", "No meaningful change"),
     ("slightly_better", "Slightly better"),
     ("much_better", "Much better"),
+    ("not_sure", "Not sure"),
 )
 CORRECTION_FREQUENCY: tuple[Option, ...] = (
     ("almost_never", "Almost never"),
@@ -79,6 +81,7 @@ CORRECTION_FREQUENCY: tuple[Option, ...] = (
     ("sometimes", "Sometimes"),
     ("often", "Often"),
     ("almost_always", "Almost always"),
+    ("not_sure", "Not sure"),
 )
 BIGGEST_BENEFIT: tuple[Option, ...] = (
     ("saves_time", "Saves time"),
@@ -251,7 +254,13 @@ class MetricsAggregator:
         respondents: Sequence[Respondent],
         criteria: Q3Q5Criteria,
     ) -> Q3Q5Analysis:
-        valid = [response for _, response in respondents if response.answers.weekly_time_saved != "not_sure"]
+        valid = [
+            response
+            for _, response in respondents
+            if response.answers.weekly_time_saved != "not_sure"
+            and response.answers.work_output_change != "not_sure"
+            and response.answers.quality_change != "not_sure"
+        ]
         matching = [
             response
             for response in valid

@@ -102,6 +102,12 @@ Positive output rate:
 reports_more_output_rate = reports_more_output / respondents_who_answered_Q4
 ```
 
+Q4 accepts `not_sure` as an answer. A `not_sure` response counts toward
+`respondents_who_answered_Q4` (it is a real, given answer, just an uncertain
+one) and appears as its own category in the option distribution — it is not
+included in `reports_more_output`. See the Missing Data Rule for where
+`not_sure` is excluded instead (the Dynamic Q3-Q5 Analysis denominator only).
+
 ## Q5. Work Quality Impact
 
 Display the option distribution as a bar chart with percentages.
@@ -121,6 +127,10 @@ Better quality rate:
 ```text
 better_quality_rate = better_quality / respondents_who_answered_Q5
 ```
+
+Q5 accepts `not_sure` as an answer, handled the same way as Q4's `not_sure`
+above: it counts toward `respondents_who_answered_Q5` and its own
+distribution category, but not toward `better_quality`.
 
 ## Q6. AI Rework Frequency
 
@@ -142,6 +152,11 @@ Frequent rework rate:
 frequent_rework_rate = frequent_rework / respondents_who_answered_Q6
 ```
 
+Q6 accepts `not_sure` as an answer, handled the same way as Q4/Q5's
+`not_sure`: it counts toward `respondents_who_answered_Q6` and its own
+distribution category, but not toward `frequent_rework`. Q6 is not part of
+the Dynamic Q3-Q5 Analysis below.
+
 ## Dynamic Q3-Q5 Analysis
 
 Leadership can combine one selected value from each of Q3, Q4, and Q5 to find
@@ -161,7 +176,10 @@ Returned metrics:
 - `analysis_denominator`: respondents with valid answers for Q3, Q4, and Q5.
 - `matching_rate`: `matching_count / analysis_denominator`.
 
-Exclude Q3 `not_sure` from the denominator.
+Exclude any respondent who answered `not_sure` on Q3, Q4, or Q5 from the
+denominator — not just Q3. This exclusion is specific to this combined
+analysis; Q4's and Q5's own individual distributions still count `not_sure`
+normally (see the Missing Data Rule).
 
 ## Q7. Primary Benefits
 
@@ -216,5 +234,15 @@ Required group row fields:
 
 ## Missing Data Rule
 
-`not_sure` is missing data, not zero. Exclude it from the Dynamic Q3-Q5 analysis
-denominator and return the denominator used for each metric.
+`not_sure` is a valid, real answer to Q3, Q4, Q5, and Q6 — it is not the same
+as no answer at all. Within each question's own distribution and rate
+(`weekly_time_saved`, `work_output`/`reports_more_output_rate`,
+`work_quality`/`better_quality_rate`, `ai_rework_frequency`/`frequent_rework_rate`,
+and the equivalent `group_breakdown` rows), `not_sure` counts toward that
+question's own denominator like any other answer; it simply never counts
+toward the positive-signal numerator (e.g. `reports_more_output`).
+
+`not_sure` is only ever excluded from a denominator in one place: the Dynamic
+Q3-Q5 Analysis, where a respondent who is unsure about any one of Q3, Q4, or
+Q5 can't meaningfully be classified into a specific three-question outcome
+combination. Return the denominator used for each metric.

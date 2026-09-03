@@ -84,6 +84,7 @@ export const WORK_OUTPUT_CHANGE: SurveyOption[] = [
   { code: "same", label: "Same" },
   { code: "slightly_more", label: "Slightly more" },
   { code: "significantly_more", label: "Significantly more" },
+  { code: "not_sure", label: "Not sure" },
 ];
 
 export const QUALITY_CHANGE: SurveyOption[] = [
@@ -92,6 +93,7 @@ export const QUALITY_CHANGE: SurveyOption[] = [
   { code: "no_meaningful_change", label: "No meaningful change" },
   { code: "slightly_better", label: "Slightly better" },
   { code: "much_better", label: "Much better" },
+  { code: "not_sure", label: "Not sure" },
 ];
 
 export const CORRECTION_FREQUENCY: SurveyOption[] = [
@@ -100,6 +102,7 @@ export const CORRECTION_FREQUENCY: SurveyOption[] = [
   { code: "sometimes", label: "Sometimes" },
   { code: "often", label: "Often" },
   { code: "almost_always", label: "Almost always" },
+  { code: "not_sure", label: "Not sure" },
 ];
 
 export const BIGGEST_BENEFIT: SurveyOption[] = [

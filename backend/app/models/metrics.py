@@ -3,13 +3,14 @@ from typing import Literal
 from pydantic import BaseModel, field_validator
 
 from app.models.employee import EmployeeLevel
-from app.models.survey_response import QualityChange, WorkOutputChange
 
 ScopeType = Literal["org", "manager", "level"]
 # Department is intentionally absent from this version's employee contract.
 # Level is the only group_breakdown dimension.
 GroupByField = Literal["level"]
 AnalysisWeeklyTimeSaved = Literal["no_noticeable_time_saved", "less_than_1_hour", "1_5_hours", "more_than_5_hours"]
+AnalysisWorkOutputChange = Literal["much_less", "slightly_less", "same", "slightly_more", "significantly_more"]
+AnalysisQualityChange = Literal["much_worse", "slightly_worse", "no_meaningful_change", "slightly_better", "much_better"]
 
 
 class ScopeDescriptor(BaseModel):
@@ -96,12 +97,26 @@ class OptionDistribution(BaseModel):
 
 class Q3Q5Criteria(BaseModel):
     weekly_time_saved: AnalysisWeeklyTimeSaved
-    work_output_change: WorkOutputChange
-    quality_change: QualityChange
+    work_output_change: AnalysisWorkOutputChange
+    quality_change: AnalysisQualityChange
 
     @field_validator("weekly_time_saved")
     @classmethod
     def reject_not_sure(cls, value: AnalysisWeeklyTimeSaved) -> AnalysisWeeklyTimeSaved:
+        if value == "not_sure":
+            raise ValueError("not_sure is not valid for Q3-Q5 analysis criteria")
+        return value
+
+    @field_validator("work_output_change")
+    @classmethod
+    def reject_not_sure_work_output(cls, value: AnalysisWorkOutputChange) -> AnalysisWorkOutputChange:
+        if value == "not_sure":
+            raise ValueError("not_sure is not valid for Q3-Q5 analysis criteria")
+        return value
+
+    @field_validator("quality_change")
+    @classmethod
+    def reject_not_sure_quality(cls, value: AnalysisQualityChange) -> AnalysisQualityChange:
         if value == "not_sure":
             raise ValueError("not_sure is not valid for Q3-Q5 analysis criteria")
         return value
